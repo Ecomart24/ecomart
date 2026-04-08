@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Placed! – Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+  <div class="success-container">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    </div>
+    <div class="success-title">Order Placed Successfully! 🎉</div>
+    <div class="success-sub">Thank you for your purchase. Your order has been confirmed.</div>
+
+    <div class="order-id">Order ID: <span id="order-id-val"></span></div>
+
+    <div class="delivery-info" id="delivery-info-block" style="display:none">
+      <h4>📍 Delivering to:</h4>
+      <p id="delivery-address-text"></p>
+    </div>
+
+    <div style="background:#fff3e0;border-radius:4px;padding:16px;margin-bottom:24px;text-align:left">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">📦 Estimated Delivery</div>
+      <div style="font-size:13px;color:#212121"><strong>2-3 Business Days</strong></div>
+      <div style="font-size:12px;color:#878787;margin-top:4px">You'll receive a confirmation email and SMS shortly.</div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="continue-btn" onclick="location.href='index.html'">CONTINUE SHOPPING</button>
+      <button style="background:#fff;color:#2874f0;font-weight:700;font-size:14px;padding:12px 24px;border:2px solid #2874f0;cursor:pointer;border-radius:2px" onclick="location.href='index.html'">TRACK ORDER</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  // Generate order ID
+  const orderId = "OD" + Date.now().toString().substring(5);
+  document.getElementById("order-id-val").textContent = orderId;
+
+  // Show delivery address if stored
+  try {
+    const addr = JSON.parse(sessionStorage.getItem("fk_address") || "{}");
+    if (addr.fullName) {
+      document.getElementById("delivery-info-block").style.display = "block";
+      document.getElementById("delivery-address-text").textContent =
+        addr.fullName + ", " + addr.address + ", " + addr.city + ", " + addr.state + " - " + addr.pincode;
+    }
+  } catch(e) {}
+</script>
+</body>
+</html>

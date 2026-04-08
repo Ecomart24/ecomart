@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product – Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+
+  <div class="breadcrumb">
+    <a href="index.html">Home</a> › <a href="index.html">Category</a> › <span id="bc-name">Product</span>
+  </div>
+
+  <div class="product-detail">
+    <!-- Images -->
+    <div class="product-images">
+      <img id="main-img" class="main-img" src="" alt="Product" onerror="this.style.opacity=0.3" />
+      <div class="thumb-row" id="thumbs"></div>
+      <div style="display:flex;gap:12px;margin-top:20px">
+        <button class="btn-cart" id="btn-cart" onclick="handleAddCart()">🛒 ADD TO CART</button>
+        <button class="btn-buy" onclick="handleBuyNow()">⚡ BUY NOW</button>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="product-info">
+      <div class="product-brand" id="p-brand"></div>
+      <div class="product-title" id="p-name"></div>
+      <div class="product-rating-row">
+        <span class="rating-badge green" id="p-rating"></span>
+        <span style="font-size:13px;color:#878787" id="p-reviews"></span>
+        <span style="font-size:13px;color:#878787">Verified Ratings</span>
+      </div>
+      <div class="product-price-block">
+        <div>
+          <span class="product-price-big" id="p-price"></span>
+          <span class="product-off-badge" id="p-off"></span>
+        </div>
+        <div class="product-original" id="p-original"></div>
+      </div>
+
+      <div style="background:#fff;border-radius:4px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#878787;margin-bottom:4px">Offer</div>
+        <div style="font-size:13px;margin-bottom:6px">🏷 <strong>Bank Offer</strong> 5% Cashback on Flipkart Axis Bank Card</div>
+        <div style="font-size:13px;margin-bottom:6px">💳 <strong>No Cost EMI</strong> starts from Rs.75/month</div>
+        <div style="font-size:13px">🎁 <strong>Special Price</strong> Get extra 5% off (price inclusive of cashback)</div>
+      </div>
+
+      <div style="background:#fff;border-radius:4px;padding:16px">
+        <div style="font-size:13px;color:#878787;margin-bottom:8px">Delivery</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input type="text" placeholder="Enter Delivery Pincode" style="padding:8px 12px;border:1px solid #e0e0e0;border-radius:2px;font-size:13px;width:180px" />
+          <button style="color:#2874f0;font-weight:700;background:none;border:none;cursor:pointer;font-size:13px">Check</button>
+        </div>
+        <div style="font-size:13px;color:#212121">✅ Usually delivered in <strong>2-3 business days</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Highlights -->
+  <div class="product-highlights" style="margin-top:16px">
+    <h3>Highlights</h3>
+    <ul id="p-highlights"></ul>
+  </div>
+
+  <!-- Description -->
+  <div style="background:#fff;border-radius:4px;padding:20px;margin-top:16px">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Product Description</h3>
+    <p style="font-size:13px;color:#212121;line-height:1.6" id="p-desc"></p>
+  </div>
+
+  <!-- Similar Products -->
+  <div class="section" style="margin-top:16px">
+    <div class="section-header">
+      <div class="section-title">Similar Products</div>
+      <button class="section-view-all" onclick="location.href='index.html'">View All ›</button>
+    </div>
+    <div class="products-grid" id="similar-grid"></div>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const p = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
+
+  document.title = p.name.substring(0, 60) + " – Flipkart";
+  document.getElementById("bc-name").textContent = p.name.substring(0, 40) + "...";
+  document.getElementById("main-img").src = p.image;
+  document.getElementById("p-brand").textContent = p.brand;
+  document.getElementById("p-name").textContent = p.name;
+  document.getElementById("p-rating").textContent = p.rating + " ★";
+  document.getElementById("p-reviews").textContent = "(" + p.reviews.toLocaleString() + " ratings)";
+  document.getElementById("p-price").textContent = "Rs." + p.price;
+  document.getElementById("p-off").textContent = p.discount + "% off";
+  document.getElementById("p-original").textContent = "Rs." + p.originalPrice + " MRP";
+  document.getElementById("p-desc").textContent = p.description;
+  document.getElementById("p-highlights").innerHTML = p.highlights.map(h => `<li>${h}</li>`).join("");
+
+  // Thumbs
+  document.getElementById("thumbs").innerHTML = p.images.map((img, i) =>
+    `<img class="thumb ${i===0?"active":""}" src="${img}" onclick="selectImg('${img}',this)" onerror="this.style.display='none'" />`
+  ).join("");
+
+  function selectImg(src, el) {
+    document.getElementById("main-img").src = src;
+    document.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
+    el.classList.add("active");
+  }
+
+  function handleAddCart() {
+    addToCart(p);
+    document.getElementById("btn-cart").textContent = "✓ ADDED TO CART";
+    setTimeout(() => { document.getElementById("btn-cart").textContent = "🛒 ADD TO CART"; }, 2000);
+  }
+
+  function handleBuyNow() {
+    addToCart(p);
+    location.href = "cart.html";
+  }
+
+  // Similar products (same category, excluding current)
+  const similar = PRODUCTS.filter(x => x.id !== p.id && x.category === p.category).slice(0, 6);
+  document.getElementById("similar-grid").innerHTML = (similar.length ? similar : PRODUCTS.filter(x=>x.id!==p.id).slice(0,6)).map(productCardHTML).join("");
+</script>
+</body>
+</html>

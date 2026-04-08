@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart – Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+  <div class="cart-layout">
+
+    <div class="cart-items" id="cart-items-container">
+      <!-- Items rendered by JS -->
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary" id="order-summary-block">
+      <div class="order-summary-header">ORDER SUMMARY</div>
+      <div class="order-summary-body">
+        <div id="summary-items"></div>
+        <div class="summary-divider">
+          <div class="summary-row"><span>Price (<span id="s-count">0</span> items)</span><span>₹<span id="s-orig">0</span></span></div>
+          <div class="summary-row"><span style="color:#388e3c">Discount</span><span style="color:#388e3c">-₹<span id="s-disc">0</span></span></div>
+          <div class="summary-row"><span>Delivery</span><span style="color:#388e3c">FREE</span></div>
+          <div class="summary-total"><span>Total</span><span>₹<span id="s-total">0</span></span></div>
+          <div class="summary-save">✓ You save ₹<span id="s-save">0</span> on this order!</div>
+        </div>
+        <div class="summary-notes">
+          <div class="summary-note">✓ Safe &amp; Secure Payments</div>
+          <div class="summary-note">✓ Free delivery above ₹499</div>
+          <div class="summary-note">✓ Easy 10-day returns</div>
+        </div>
+        <button class="place-order-btn" onclick="location.href='checkout.html'">PLACE ORDER</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  function renderCart() {
+    const cart = getCart();
+    const container = document.getElementById("cart-items-container");
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="cart-empty">
+          <div style="font-size:64px;margin-bottom:16px">🛒</div>
+          <h2>Your cart is empty!</h2>
+          <p>Add items to it now.</p>
+          <button onclick="location.href='index.html'" style="background:#2874f0;color:#fff;font-weight:700;padding:12px 32px;border:none;cursor:pointer;border-radius:2px;font-size:14px">SHOP NOW</button>
+        </div>`;
+      document.getElementById("order-summary-block").style.display = "none";
+      return;
+    }
+
+    container.innerHTML = cart.map(item => `
+      <div class="cart-item" id="item-${item.id}">
+        <img class="cart-item-img" src="${item.image}" alt="${item.name}" onerror="this.style.opacity=0.3" />
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name.substring(0, 70)}...</div>
+          <div class="cart-item-seller">Seller: Flipkart Sale &nbsp;&nbsp;✅ Assured</div>
+          <div class="cart-item-price">₹${item.price} <span style="font-size:13px;font-weight:400;color:#878787;text-decoration:line-through">₹${item.originalPrice}</span> <span style="font-size:13px;font-weight:600;color:#388e3c">${item.discount}% off</span></div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('${item.id}', ${item.qty - 1})">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.id}', ${item.qty + 1})">+</button>
+            <button class="remove-btn" onclick="removeItem('${item.id}')">REMOVE</button>
+          </div>
+        </div>
+      </div>`).join("");
+
+    // Summary
+    const items = cart.length;
+    const orig = getCartOriginalTotal();
+    const disc = getCartDiscount();
+    const total = getCartTotal();
+
+    document.getElementById("s-count").textContent = items;
+    document.getElementById("s-orig").textContent = orig;
+    document.getElementById("s-disc").textContent = disc;
+    document.getElementById("s-total").textContent = total;
+    document.getElementById("s-save").textContent = disc;
+
+    document.getElementById("summary-items").innerHTML = cart.slice(0,3).map(item => `
+      <div class="summary-item">
+        <img src="${item.image}" onerror="this.style.display='none'" />
+        <div class="summary-item-info">
+          <div class="summary-item-name">${item.name.substring(0,35)}...</div>
+          <div class="summary-item-qty">Qty: ${item.qty}</div>
+        </div>
+        <span class="summary-item-price">₹${item.price * item.qty}</span>
+      </div>`).join("");
+  }
+
+  function changeQty(id, newQty) {
+    updateQty(id, newQty);
+    renderCart();
+    updateCartBadge();
+  }
+
+  function removeItem(id) {
+    removeFromCart(id);
+    renderCart();
+    updateCartBadge();
+  }
+
+  // Pre-populate cart with some items if empty
+  if (getCart().length === 0) {
+    const starters = [PRODUCTS[1], PRODUCTS[2], PRODUCTS[4]];
+    starters.forEach(p => addToCart(p));
+  }
+
+  renderCart();
+</script>
+</body>
+</html>

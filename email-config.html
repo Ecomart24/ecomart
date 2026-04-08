@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Configuration Setup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+        }
+        
+        .config-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .step-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .code-block {
+            background: #f1f3f4;
+            border: 1px solid #e1e5e9;
+            border-radius: 5px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="config-container">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-envelope"></i> Email Configuration Setup
+        </h1>
+        <p class="text-center text-muted mb-4">Follow these steps to enable email sending for your address card system</p>
+        
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h4>Create EmailJS Account</h4>
+            <p>Go to <a href="https://www.emailjs.com/" target="_blank">EmailJS.com</a> and sign up for a free account.</p>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h4>Create Email Service</h4>
+            <p>In your EmailJS dashboard, add an email service (Gmail, Outlook, etc.).</p>
+            <ul>
+                <li>Click "Email Services" → "Add New Service"</li>
+                <li>Choose your email provider (Gmail recommended)</li>
+                <li>Connect your email account</li>
+            </ul>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h4>Create Email Templates</h4>
+            <p>Create two email templates in EmailJS:</p>
+            
+            <h5>Template 1: OTP Email</h5>
+            <div class="code-block">
+Subject: Your OTP Verification Code
+
+Hello {{user_name}},
+
+Your OTP code is: {{otp}}
+
+This code will expire in 10 minutes.
+
+Thank you!
+            </div>
+            
+            <h5>Template 2: Address Card Email</h5>
+            <div class="code-block">
+Subject: Your Custom Address Card
+
+Hello {{fullName}},
+
+Here is your custom address card:
+
+{{card_html}}
+
+Thank you for using our service!
+            </div>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <h4>Get Your Credentials</h4>
+            <p>Find your credentials in the EmailJS dashboard:</p>
+            <ul>
+                <li><strong>Public Key:</strong> Account → API Keys → Public Key</li>
+                <li><strong>Service ID:</strong> Email Services → Your Service → Service ID</li>
+                <li><strong>Template IDs:</strong> Email Templates → Your Templates → Template ID</li>
+            </ul>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">5</div>
+            <h4>Update the Code</h4>
+            <p>Replace the placeholder values in <code>address-card.html</code>:</p>
+            
+            <div class="code-block">
+// Find this line in address-card.html:
+emailjs.init("YOUR_PUBLIC_KEY");
+
+// Replace with your actual Public Key
+emailjs.init("YOUR_ACTUAL_PUBLIC_KEY_HERE");
+            </div>
+            
+            <div class="code-block">
+// Find the sendOTPEmail function and replace with:
+await emailjs.send('YOUR_SERVICE_ID', 'YOUR_OTP_TEMPLATE_ID', {
+    to_email: email,
+    user_name: formData.fullName,
+    otp: otp
+});
+            </div>
+            
+            <div class="code-block">
+// Find the sendAddressCardEmail function and replace with:
+await emailjs.send('YOUR_SERVICE_ID', 'YOUR_CARD_TEMPLATE_ID', {
+    to_email: data.email,
+    fullName: data.fullName,
+    card_html: cardContent
+});
+            </div>
+        </div>
+        
+        <div class="highlight">
+            <h5><i class="fas fa-info-circle"></i> Quick Setup Alternative</h5>
+            <p>If you want to test immediately without EmailJS setup, the current code will show the OTP in an alert box and log the card details to the console. This is perfect for testing the functionality!</p>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="address-card.html" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-left"></i> Back to Address Card
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

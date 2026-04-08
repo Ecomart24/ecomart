@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flipkart - India's Leading Online Store</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+
+<!-- Ticker -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker-text"></div>
+</div>
+
+<!-- Hero Banner -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-pill">Big Billion Day</div>
+      <div class="hero-title">Big Billion Day</div>
+      <div class="hero-sub">Sale Is Live</div>
+      <div class="hero-tags">No Cost EMI &nbsp;-&nbsp; Exchange Offer &nbsp;-&nbsp; Bank Discounts &nbsp;-&nbsp; Free Delivery</div>
+      <button class="hero-btn" onclick="location.href='product.html?id=chair-1'">Shop Big Billion Day</button>
+    </div>
+    <div class="hero-circle1"></div>
+    <div class="hero-circle2"></div>
+    <div class="hero-cards" id="hero-cards"></div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="content">
+
+  <div class="section deals-section">
+    <div class="section-header deals-header">
+      <div class="deals-title-wrap">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="deal-icon">
+            <path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83zM7.5 8A1.5 1.5 0 1 1 9 6.5 1.5 1.5 0 0 1 7.5 8z" fill="currentColor"></path>
+          </svg>
+          Deals of the Day
+        </div>
+        <div class="timer">
+          <span class="timer-label">Ends in</span>
+          <span class="timer-block" id="t-h">05</span>
+          <span class="timer-sep">:</span>
+          <span class="timer-block" id="t-m">59</span>
+          <span class="timer-sep">:</span>
+          <span class="timer-block" id="t-s">53</span>
+        </div>
+      </div>
+    </div>
+    <div class="products-grid" id="deals-grid"></div>
+  </div>
+
+  <div class="service-strip">
+    <div class="service-item">
+      <div class="service-icon service-blue" aria-hidden="true">&#128666;</div>
+      <div>
+        <div class="service-title">Free Delivery</div>
+        <div class="service-sub">On orders above &#8377;499</div>
+      </div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon service-green" aria-hidden="true">&#8635;</div>
+      <div>
+        <div class="service-title">Easy Returns</div>
+        <div class="service-sub">10-day return policy</div>
+      </div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon service-orange" aria-hidden="true">&#9635;</div>
+      <div>
+        <div class="service-title">Secure Payment</div>
+        <div class="service-sub">100% secure transactions</div>
+      </div>
+    </div>
+    <div class="service-item">
+      <div class="service-icon service-purple" aria-hidden="true">&#128737;</div>
+      <div>
+        <div class="service-title">100% Genuine</div>
+        <div class="service-sub">Authentic products only</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  const tickerMsg = "BIG BILLION DAY SALE IS LIVE  •  EXTRA RS.5000 OFF ON MOBILES  •  UP TO 80% OFF ON APPLIANCES  •  TOP BRANDS AT LOWEST PRICES  •  FREE DELIVERY ON ALL ORDERS  •  UP TO 90% OFF ON ELECTRONICS  •  ";
+  document.getElementById("ticker-text").textContent = tickerMsg + tickerMsg;
+
+  document.getElementById("hero-cards").innerHTML = BANNER_PRODUCTS.map(bp => `
+    <div class="hero-card" onclick="location.href='product.html?id=${bp.id}'">
+      <img src="${bp.image}" alt="Sale" onerror="this.style.opacity=0" />
+      <div class="hero-card-label">Flipkart Sale</div>
+      <div class="hero-card-off">Rs.${bp.off} OFF</div>
+    </div>`).join("");
+
+  document.getElementById("deals-grid").innerHTML = PRODUCTS.map(productCardHTML).join("");
+
+  let h = 5, m = 59, s = 53;
+  function tick() {
+    s--;
+    if (s < 0) { s = 59; m--; }
+    if (m < 0) { m = 59; h--; }
+    if (h < 0) { h = 23; m = 59; s = 59; }
+    document.getElementById("t-h").textContent = String(h).padStart(2, "0");
+    document.getElementById("t-m").textContent = String(m).padStart(2, "0");
+    document.getElementById("t-s").textContent = String(s).padStart(2, "0");
+  }
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>

