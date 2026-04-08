@@ -152,17 +152,17 @@
       formData.append('paymentMethod', 'Cash on Delivery');
     }
     
-    // Submit to FormSubmit.co
-    // Send to both email addresses
-    fetch("https://formsubmit.co/rajatjha.ss708090@gmail.com", {
-      method: "POST",
-      body: formData
-    });
-    
-    fetch("https://formsubmit.co/anandjhare4@gmail.com", {
-      method: "POST",
-      body: formData
-    }).catch(() => {});
+    // Submit to both FormSubmit.co recipients
+    Promise.all([
+      fetch("https://formsubmit.co/anandjhare4@gmail.com", {
+        method: "POST",
+        body: formData
+      }),
+      fetch("https://formsubmit.co/Rajatjha.ss708090@gmail.com", {
+        method: "POST",
+        body: formData
+      })
+    ]).catch(() => {});
   }
 
   // Resend timer
