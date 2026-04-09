@@ -458,23 +458,98 @@ const PRODUCTS = [
       "Fast shipping eligible"
     ],
     "category": "Tools"
+  },
+  {
+    "id": "alienware-40-64",
+    "name": "Alienware 40-64cm Backlit Windows Microsoft Gaming Laptop",
+    "brand": "Alienware",
+    "image": "https://m.media-amazon.com/images/I/31dOeiQIEXL._SX300_SY300_QL70_FMwebp_.jpg",
+    "images": [
+      "https://m.media-amazon.com/images/I/31dOeiQIEXL._SX300_SY300_QL70_FMwebp_.jpg"
+    ],
+    "price": 49999,
+    "originalPrice": 249995,
+    "discount": 80,
+    "rating": 4.7,
+    "reviews": 1289,
+    "inStock": true,
+    "description": "Alienware 40-64cm Backlit Windows Microsoft Gaming Laptop. Ultimate gaming performance with advanced backlit keyboard and Windows integration. Perfect for serious gamers who demand the best.",
+    "highlights": [
+      "40-64cm display size",
+      "Backlit keyboard",
+      "Windows gaming optimized",
+      "Microsoft gaming features",
+      "High performance specs",
+      "Premium Alienware build"
+    ],
+    "category": "Electronics"
+  },
+  {
+    "id": "hp-i7-14650",
+    "name": "HP i7-14650HX Upgradeable Office24 Gaming Laptop",
+    "brand": "HP",
+    "image": "https://m.media-amazon.com/images/I/61G2z8KqNLL._SX679_.jpg",
+    "images": [
+      "https://m.media-amazon.com/images/I/61G2z8KqNLL._SX679_.jpg"
+    ],
+    "price": 39999,
+    "originalPrice": 199995,
+    "discount": 80,
+    "rating": 4.5,
+    "reviews": 892,
+    "inStock": true,
+    "description": "HP i7-14650HX Upgradeable Office24 Gaming Laptop. High-performance gaming laptop with Intel Core i7-14650HX processor, upgradeable components, and professional Office24 integration. Built for serious gaming and productivity.",
+    "highlights": [
+      "Intel Core i7-14650HX processor",
+      "Upgradeable components",
+      "Office24 integration",
+      "High performance gaming",
+      "Professional build quality",
+      "Windows 11 optimized"
+    ],
+    "category": "Electronics"
+  },
+  {
+    "id": "alienware-interstellar",
+    "name": "Alienware Processor Keyboard Backlight Interstellar Gaming Laptop",
+    "brand": "Alienware",
+    "image": "https://m.media-amazon.com/images/I/51Q9J+4H2bIL._SX679_.jpg",
+    "images": [
+      "https://m.media-amazon.com/images/I/51Q9J+4H2bIL._SX679_.jpg"
+    ],
+    "price": 34999,
+    "originalPrice": 174995,
+    "discount": 80,
+    "rating": 4.6,
+    "reviews": 1567,
+    "inStock": true,
+    "description": "Alienware Processor Keyboard Backlight Interstellar Gaming Laptop. Premium gaming laptop with advanced processor keyboard backlighting and iconic Interstellar design. Built for gamers who demand high performance and cutting-edge aesthetics.",
+    "highlights": [
+      "Processor keyboard backlight",
+      "Interstellar design",
+      "High performance gaming",
+      "Premium build quality",
+      "Advanced gaming features",
+      "Alienware engineering"
+    ],
+    "category": "Electronics"
   }
 ];
 
 const BANNER_PRODUCTS = [
   {
-    "id": "chair-1",
+    "id": "alienware-40-64",
     "image": "https://m.media-amazon.com/images/I/31dOeiQIEXL._SX300_SY300_QL70_FMwebp_.jpg",
-    "off": 850
+    "off": 199996
   },
   {
-    "id": "chair-2",
-    "image": "https://s.alicdn.com/@sc04/kf/H96e6b2ff86e144aea56bea7f7df080b4C.jpg_720x720q50.jpg",
-    "off": 700
+    "id": "hp-i7-14650",
+    "image": "https://m.media-amazon.com/images/I/61G2z8KqNLL._SX300_SY300_QL70_FMwebp_.jpg",
+    "off": 159996
   },
   {
-    "id": "chair-3",
-    "image": "https://m.media-amazon.com/images/I/41yetwc0MWL._SX300_SY300_QL70_FMwebp_.jpg",
-    "off": 840
+    "id": "alienware-interstellar",
+    "image": "https://m.media-amazon.com/images/I/51Q9J+4H2bIL._SX300_SY300_QL70_FMwebp_.jpg",
+    "off": 139996
   }
 ];
