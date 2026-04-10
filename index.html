@@ -107,7 +107,17 @@
       <div class="hero-card-off">Rs.${bp.off} OFF</div>
     </div>`).join("");
 
-  document.getElementById("deals-grid").innerHTML = PRODUCTS.map(productCardHTML).join("");
+  // Debug: Check if products are loaded
+  console.log('PRODUCTS loaded:', PRODUCTS.length);
+  console.log('PRODUCTS data:', PRODUCTS);
+  
+  const dealsGrid = document.getElementById("deals-grid");
+  if (dealsGrid) {
+    dealsGrid.innerHTML = PRODUCTS.map(productCardHTML).join("");
+    console.log('Products rendered successfully');
+  } else {
+    console.error('deals-grid element not found');
+  }
 
   let h = 5, m = 59, s = 53;
   function tick() {
