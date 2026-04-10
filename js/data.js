@@ -3,13 +3,13 @@ const PRODUCTS = [
     "id": "tazo-solid-green-polo",
     "name": "Tazo Solid Green Polo T-Shirt - Premium Cotton Fabric",
     "brand": "Tazo",
-    "image": "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
+    "image": "https://rukminim1.flixcart.com/image/2940/2940/xif0q/t-shirt/v/l/9/m-ts-405-seagreen-1-tazo-original-imahhbbhhpnhdmby.jpeg?q=90",
     "images": [
-      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
-      "https://m.media-amazon.com/images/I/41+5z5K8L._SX679_.jpg",
-      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg"
+      "https://rukminim1.flixcart.com/image/2940/2940/xif0q/t-shirt/v/l/9/m-ts-405-seagreen-1-tazo-original-imahhbbhhpnhdmby.jpeg?q=90",
+      "https://rukminim1.flixcart.com/image/2940/2940/xif0q/t-shirt/v/l/9/m-ts-405-seagreen-1-tazo-original-imahhbbhhpnhdmby.jpeg?q=90",
+      "https://rukminim1.flixcart.com/image/2940/2940/xif0q/t-shirt/v/l/9/m-ts-405-seagreen-1-tazo-original-imahhbbhhpnhdmby.jpeg?q=90"
     ],
-    "price": 899,
+    "price": 168,
     "originalPrice": 4499,
     "discount": 80,
     "rating": 4.5,
@@ -610,7 +610,7 @@ const BANNER_PRODUCTS = [
   },
   {
     "id": "tazo-solid-green-polo",
-    "image": "https://m.media-amazon.com/images/I/51+5z5K8L._SX300_SY300_QL70_FMwebp_.jpg",
+    "image": "https://rukminim1.flixcart.com/image/2940/2940/xif0q/t-shirt/v/l/9/m-ts-405-seagreen-1-tazo-original-imahhbbhhpnhdmby.jpeg?q=90",
     "off": 3600
   }
 ];
