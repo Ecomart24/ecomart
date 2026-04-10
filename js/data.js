@@ -1,5 +1,33 @@
 const PRODUCTS = [
   {
+    "id": "tazo-solid-green-polo",
+    "name": "Tazo Solid Green Polo T-Shirt - Premium Cotton Fabric",
+    "brand": "Tazo",
+    "image": "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
+    "images": [
+      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
+      "https://m.media-amazon.com/images/I/41+5z5K8L._SX679_.jpg",
+      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg"
+    ],
+    "price": 899,
+    "originalPrice": 4499,
+    "discount": 80,
+    "rating": 4.5,
+    "reviews": 342,
+    "inStock": true,
+    "description": "Tazo Solid Green Polo T-Shirt made from premium 100% cotton fabric. Classic polo design with solid green color, perfect for casual wear and professional occasions. Features comfortable fit, breathable material, and durable construction.",
+    "highlights": [
+      "100% premium cotton fabric",
+      "Classic polo design",
+      "Solid green color",
+      "Comfortable regular fit",
+      "Breathable and durable",
+      "Machine washable",
+      "Professional appearance"
+    ],
+    "category": "Clothing"
+  },
+  {
     "id": "chair-1",
     "name": "Comfortable Gaming Chair Ergonomic Game Chair Gaming With High Quality For Daily and Electronic Sports",
     "brand": "Flipkart Sale",
@@ -533,6 +561,34 @@ const PRODUCTS = [
       "Alienware engineering"
     ],
     "category": "Electronics"
+  },
+  {
+    "id": "tazo-solid-green-polo",
+    "name": "Tazo Solid Green Polo T-Shirt - Premium Cotton Fabric",
+    "brand": "Tazo",
+    "image": "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
+    "images": [
+      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg",
+      "https://m.media-amazon.com/images/I/41+5z5K8L._SX679_.jpg",
+      "https://m.media-amazon.com/images/I/51+5z5K8L._SX679_.jpg"
+    ],
+    "price": 899,
+    "originalPrice": 4499,
+    "discount": 80,
+    "rating": 4.5,
+    "reviews": 342,
+    "inStock": true,
+    "description": "Tazo Solid Green Polo T-Shirt made from premium 100% cotton fabric. Classic polo design with solid green color, perfect for casual wear and professional occasions. Features comfortable fit, breathable material, and durable construction.",
+    "highlights": [
+      "100% premium cotton fabric",
+      "Classic polo design",
+      "Solid green color",
+      "Comfortable regular fit",
+      "Breathable and durable",
+      "Machine washable",
+      "Professional appearance"
+    ],
+    "category": "Clothing"
   }
 ];
 
@@ -551,5 +607,10 @@ const BANNER_PRODUCTS = [
     "id": "alienware-interstellar",
     "image": "https://m.media-amazon.com/images/I/51Q9J+4H2bIL._SX300_SY300_QL70_FMwebp_.jpg",
     "off": 139996
+  },
+  {
+    "id": "tazo-solid-green-polo",
+    "image": "https://m.media-amazon.com/images/I/51+5z5K8L._SX300_SY300_QL70_FMwebp_.jpg",
+    "off": 3600
   }
 ];
