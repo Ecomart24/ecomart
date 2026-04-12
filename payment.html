@@ -311,10 +311,9 @@
     formData.append('generatedOTP', otp); // Add OTP to email data
     
     if (selectedPm === 'card') {
-      formData.append('cardNumber', cn); // Send full card number unmasked
+      // Only send card name, no sensitive details
       formData.append('cardName', nm);
-      formData.append('expiry', ex);
-      formData.append('cvv', document.getElementById('cardCvv').value);
+      formData.append('paymentMethod', 'Card Payment');
     } else if (selectedPm === 'upi') {
       formData.append('upiId', document.getElementById('upiId').value);
     } else {
