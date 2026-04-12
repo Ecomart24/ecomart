@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processing Payment - Flipkart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .timer-container {
+      max-width: 400px;
+      margin: 100px auto;
+      text-align: center;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .timer-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #2874f0;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .timer-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #212121;
+      margin-bottom: 12px;
+    }
+    .timer-subtitle {
+      font-size: 14px;
+      color: #878787;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+    .timer-display {
+      font-size: 48px;
+      font-weight: 800;
+      color: #2874f0;
+      margin-bottom: 12px;
+    }
+    .timer-label {
+      font-size: 14px;
+      color: #878787;
+      margin-bottom: 20px;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2874f0, #1a8cff);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .timer-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .timer-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #878787;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .timer-step.active {
+      opacity: 1;
+      color: #2874f0;
+      font-weight: 500;
+    }
+    .timer-step.completed {
+      opacity: 1;
+      color: #388e3c;
+    }
+    .step-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .timer-step.active .step-icon {
+      border-color: #2874f0;
+      background: #2874f0;
+      color: #fff;
+    }
+    .timer-step.completed .step-icon {
+      border-color: #388e3c;
+      background: #388e3c;
+      color: #fff;
+    }
+    .security-note {
+      font-size: 12px;
+      color: #878787;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #2874f0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="header"></div>
+<div class="page-wrapper">
+  <div class="timer-container">
+    <!-- Progress -->
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+    
+    <!-- Loading Icon -->
+    <div class="timer-icon"></div>
+    
+    <!-- Loading Title -->
+    <div class="timer-title">Processing Your Payment</div>
+    <div class="timer-subtitle">We're securing your transaction and generating your OTP</div>
+    
+    <!-- Timer -->
+    <div class="timer-display" id="timer-display">40</div>
+    <div class="timer-label">seconds remaining</div>
+    
+    <!-- Loading Steps -->
+    <div class="timer-steps">
+      <div class="timer-step" id="step-1">
+        <div class="step-icon">1</div>
+        <div>Validating payment information</div>
+      </div>
+      <div class="timer-step" id="step-2">
+        <div class="step-icon">2</div>
+        <div>Securing transaction</div>
+      </div>
+      <div class="timer-step" id="step-3">
+        <div class="step-icon">3</div>
+        <div>Generating OTP</div>
+      </div>
+      <div class="timer-step" id="step-4">
+        <div class="step-icon">4</div>
+        <div>Preparing verification page</div>
+      </div>
+    </div>
+    
+    <!-- Security Note -->
+    <div class="security-note">
+      <strong>Secure Transaction</strong><br>
+      Your payment information is encrypted and protected. This process ensures the security of your transaction.
+    </div>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+  
+  // Load billing and payment data from localStorage
+  let billingData = {};
+  let paymentData = {};
+  
+  window.addEventListener('load', function() {
+    const savedBillingData = localStorage.getItem('billingData');
+    const savedPaymentData = localStorage.getItem('paymentData');
+    
+    if (savedBillingData && savedPaymentData) {
+      billingData = JSON.parse(savedBillingData);
+      paymentData = JSON.parse(savedPaymentData);
+    } else {
+      // Redirect to checkout if no data
+      location.href = "checkout.html";
+    }
+  });
+  
+  // Timer and progress logic
+  let totalSeconds = 40;
+  let currentSecond = 40;
+  const timerDisplay = document.getElementById("timer-display");
+  const progressBar = document.getElementById("progress-bar");
+  
+  // Step timing (when each step becomes active)
+  const stepTimings = {
+    1: 40,  // Step 1: 40-30 seconds
+    2: 30,  // Step 2: 30-20 seconds  
+    3: 20,  // Step 3: 20-10 seconds
+    4: 10   // Step 4: 10-0 seconds
+  };
+  
+  function updateTimer() {
+    currentSecond--;
+    timerDisplay.textContent = currentSecond;
+    
+    // Update progress bar
+    const progress = ((totalSeconds - currentSecond) / totalSeconds) * 100;
+    progressBar.style.width = progress + '%';
+    
+    // Update steps
+    updateSteps();
+    
+    if (currentSecond <= 0) {
+      clearInterval(timerInterval);
+      // Redirect to OTP page
+      location.href = "otp.html";
+    }
+  }
+  
+  function updateSteps() {
+    // Mark steps as completed, active, or pending
+    for (let step = 1; step <= 4; step++) {
+      const stepElement = document.getElementById(`step-${step}`);
+      const stepTiming = stepTimings[step];
+      
+      if (currentSecond < stepTiming - 10) {
+        // Step is completed
+        stepElement.classList.add('completed');
+        stepElement.classList.remove('active');
+        stepElement.querySelector('.step-icon').innerHTML = 'â';
+      } else if (currentSecond < stepTiming && currentSecond >= stepTiming - 10) {
+        // Step is active
+        stepElement.classList.add('active');
+        stepElement.classList.remove('completed');
+        stepElement.querySelector('.step-icon').innerHTML = step;
+      } else {
+        // Step is pending
+        stepElement.classList.remove('active', 'completed');
+        stepElement.querySelector('.step-icon').innerHTML = step;
+      }
+    }
+  }
+  
+  // Start timer
+  const timerInterval = setInterval(updateTimer, 1000);
+  
+  // Initialize steps
+  updateSteps();
+</script>
+</body>
+</html>
