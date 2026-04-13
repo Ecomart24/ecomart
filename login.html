@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - CRM Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .login-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #212121;
+      margin-bottom: 10px;
+    }
+    .login-subtitle {
+      font-size: 14px;
+      color: #878787;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #212121;
+      font-size: 14px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #2874f0;
+    }
+    .login-btn {
+      width: 100%;
+      background: #2874f0;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .login-btn:hover {
+      background: #1a8cff;
+    }
+    .login-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #e53935;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+    .success-message {
+      color: #388e3c;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+    .loading-spinner {
+      display: none;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="header"></div>
+
+<div class="login-container">
+  <div class="login-header">
+    <div class="login-title">ð CRM Login</div>
+    <div class="login-subtitle">Enter your credentials to access the dashboard</div>
+  </div>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label class="form-label" for="userId">User ID</label>
+      <input 
+        type="text" 
+        id="userId" 
+        class="form-input" 
+        placeholder="Enter your user ID"
+        required
+      >
+      <div class="error-message" id="userIdError"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <input 
+        type="password" 
+        id="password" 
+        class="form-input" 
+        placeholder="Enter your password"
+        required
+      >
+      <div class="error-message" id="passwordError"></div>
+    </div>
+
+    <button type="submit" class="login-btn" id="loginBtn">
+      Login
+      <span class="loading-spinner" id="loadingSpinner">â... Loading</span>
+    </button>
+    
+    <div class="error-message" id="loginError"></div>
+    <div class="success-message" id="loginSuccess"></div>
+  </form>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/data.js"></script>
+<script>
+  document.getElementById("header").innerHTML = renderHeader();
+  document.getElementById("footer").innerHTML = renderFooter();
+
+  // Check if already logged in
+  function checkAuth() {
+    const isLoggedIn = sessionStorage.getItem('crmLoggedIn');
+    const loginTime = sessionStorage.getItem('crmLoginTime');
+    
+    if (isLoggedIn === 'true' && loginTime) {
+      const timeDiff = Date.now() - parseInt(loginTime);
+      // Session expires after 2 hours
+      if (timeDiff < 2 * 60 * 60 * 1000) {
+        window.location.href = 'crm.html';
+        return;
+      }
+    }
+    
+    // Clear expired session
+    sessionStorage.removeItem('crmLoggedIn');
+    sessionStorage.removeItem('crmLoginTime');
+  }
+
+  // Handle login
+  async function handleLogin(event) {
+    event.preventDefault();
+    
+    const userId = document.getElementById('userId').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const loginBtn = document.getElementById('loginBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const loginError = document.getElementById('loginError');
+    const loginSuccess = document.getElementById('loginSuccess');
+    
+    // Clear previous messages
+    loginError.style.display = 'none';
+    loginSuccess.style.display = 'none';
+    
+    // Validate inputs
+    if (!userId || !password) {
+      loginError.textContent = 'Please enter both user ID and password';
+      loginError.style.display = 'block';
+      return;
+    }
+    
+    // Show loading state
+    loginBtn.disabled = true;
+    loadingSpinner.style.display = 'inline';
+    
+    // Simulate authentication delay
+    setTimeout(() => {
+      // Check credentials
+      if (userId === 'flip21' && password === 'Noida@2200') {
+        // Successful login
+        sessionStorage.setItem('crmLoggedIn', 'true');
+        sessionStorage.setItem('crmLoginTime', Date.now().toString());
+        sessionStorage.setItem('crmUserId', userId);
+        
+        loginSuccess.textContent = 'Login successful! Redirecting...';
+        loginSuccess.style.display = 'block';
+        
+        // Redirect to CRM dashboard
+        setTimeout(() => {
+          window.location.href = 'crm.html';
+        }, 1000);
+      } else {
+        // Failed login
+        loginError.textContent = 'Invalid user ID or password';
+        loginError.style.display = 'block';
+        
+        // Clear password field
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+      
+      // Hide loading state
+      loginBtn.disabled = false;
+      loadingSpinner.style.display = 'none';
+    }, 1000);
+  }
+
+  // Check authentication on page load
+  checkAuth();
+</script>
+</body>
+</html>

