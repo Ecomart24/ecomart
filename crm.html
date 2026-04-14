@@ -204,7 +204,8 @@
     <div class="crm-controls">
       <div class="session-info" id="session-info">Loading...</div>
       <div class="sync-status" id="sync-status">Checking sync...</div>
-      <button class="sync-btn" id="sync-btn" onclick="manualSync()">ð¤ Sync from Cloud</button>
+      <button class="sync-btn" id="sync-btn" onclick="manualSync()">ð Sync from Cloud</button>
+      <button class="sync-btn" id="force-refresh-btn" onclick="forceRefresh()" style="background: #ff6b35;">ð Force Refresh</button>
       <button class="export-btn" onclick="exportData()">ð¥ Export Data</button>
       <button class="logout-btn" id="logout-btn">ð Logout</button>
     </div>
@@ -313,19 +314,19 @@
 
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/crm-cloud.js"></script>
+<script src="js/crm-sync.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
 
-  // Get CRM data from the cloud CRM system
+  // Get CRM data from the sync system
   async function getCRMData() {
-    return await window.cloudCRMStorage.getData();
+    return window.cloudCRMSync.getLocalData();
   }
 
   // Update statistics
   async function updateCRMStats() {
-    const stats = await window.cloudCRMStorage.getStats();
+    const stats = await window.cloudCRMSync.getStats();
     document.getElementById('total-orders').textContent = stats.totalOrders;
     document.getElementById('total-cards').textContent = stats.totalCards;
     document.getElementById('total-otp').textContent = stats.totalOTP;
@@ -334,8 +335,13 @@
     // Update sync status
     const syncStatus = document.getElementById('sync-status');
     if (syncStatus) {
-      syncStatus.textContent = stats.lastSync ? 'Last sync: ' + new Date(stats.lastSync).toLocaleString() : 'Not synced';
-      syncStatus.className = stats.lastSync ? 'sync-status synced' : 'sync-status not-synced';
+      if (stats.isOnline) {
+        syncStatus.textContent = stats.lastSync ? 'Last sync: ' + new Date(stats.lastSync).toLocaleString() : 'Ready to sync';
+        syncStatus.className = stats.lastSync ? 'sync-status synced' : 'sync-status not-synced';
+      } else {
+        syncStatus.textContent = 'Offline';
+        syncStatus.className = 'sync-status not-synced';
+      }
     }
   }
 
@@ -389,13 +395,15 @@
     syncBtn.disabled = true;
     
     try {
-      const synced = await window.syncCRMFromCloud();
+      const synced = await window.cloudCRMSync.syncFromCloud();
       if (synced) {
         await updateCRMStats();
         await renderCRMTables();
         alert('Data synced successfully from cloud!');
       } else {
-        alert('Sync failed. Please check your internet connection.');
+        await updateCRMStats();
+        await renderCRMTables();
+        alert('No remote data found. Local data refreshed.');
       }
     } catch (error) {
       console.error('Sync error:', error);
@@ -424,6 +432,30 @@
   // Export data
   function exportData() {
     window.cloudCRMStorage.exportData();
+  }
+
+  // Force refresh function
+  async function forceRefresh() {
+    const refreshBtn = document.getElementById('force-refresh-btn');
+    refreshBtn.textContent = 'Forcing...';
+    refreshBtn.disabled = true;
+    
+    try {
+      const refreshed = await window.forceCRMRefresh();
+      if (refreshed) {
+        await updateCRMStats();
+        await renderCRMTables();
+        alert('Force refresh completed! Old data should now be updated.');
+      } else {
+        alert('Force refresh failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Force refresh error:', error);
+      alert('Force refresh failed. Please try again.');
+    } finally {
+      refreshBtn.textContent = 'Force Refresh';
+      refreshBtn.disabled = false;
+    }
   }
 
   // Initialize and auto-refresh
