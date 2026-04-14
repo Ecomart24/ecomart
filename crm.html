@@ -206,6 +206,7 @@
       <div class="sync-status" id="sync-status">Checking sync...</div>
       <button class="sync-btn" id="sync-btn" onclick="manualSync()">ð Sync from Cloud</button>
       <button class="sync-btn" id="force-refresh-btn" onclick="forceRefresh()" style="background: #ff6b35;">ð Force Refresh</button>
+      <button class="sync-btn" id="data-refresh-btn" onclick="refreshData()" style="background: #17a2b8;">ð Fix Data</button>
       <button class="export-btn" onclick="exportData()">ð¥ Export Data</button>
       <button class="logout-btn" id="logout-btn">ð Logout</button>
     </div>
@@ -315,6 +316,7 @@
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/crm-sync.js"></script>
+<script src="js/crm-data-fixer.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
@@ -454,6 +456,26 @@
       alert('Force refresh failed. Please try again.');
     } finally {
       refreshBtn.textContent = 'Force Refresh';
+      refreshBtn.disabled = false;
+    }
+  }
+
+  // Refresh data function
+  async function refreshData() {
+    const refreshBtn = document.getElementById('data-refresh-btn');
+    refreshBtn.textContent = 'Fixing...';
+    refreshBtn.disabled = true;
+    
+    try {
+      await window.refreshCRMData();
+      await updateCRMStats();
+      await renderCRMTables();
+      alert('Data fixed! Sample data loaded and tables refreshed.');
+    } catch (error) {
+      console.error('Data refresh error:', error);
+      alert('Data refresh failed. Please try again.');
+    } finally {
+      refreshBtn.textContent = 'Fix Data';
       refreshBtn.disabled = false;
     }
   }
