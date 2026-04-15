@@ -491,9 +491,15 @@
     return details.length ? details.join(' | ') : 'N/A';
   }
 
+  function isLocalMode(diagnostics) {
+    const outcome = String((diagnostics && diagnostics.outcome) || '');
+    return outcome.includes('local') && outcome !== 'cloud_synced';
+  }
+
   // Update statistics
   async function updateCRMStats() {
     const stats = window.customerCRMFlow.getCRMStats();
+    const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
     document.getElementById('total-orders').textContent = stats.totalOrders;
     document.getElementById('total-cards').textContent = stats.totalCards;
     document.getElementById('total-otp').textContent = stats.totalOTP;
@@ -503,8 +509,13 @@
     const syncStatus = document.getElementById('sync-status');
     if (syncStatus) {
       if (stats.isOnline) {
-        syncStatus.textContent = 'Customer data active: ' + new Date(stats.lastSync).toLocaleString();
-        syncStatus.className = 'sync-status synced';
+        if (isLocalMode(diagnostics)) {
+          syncStatus.textContent = 'Local sync active (cloud unavailable)';
+          syncStatus.className = 'sync-status not-synced';
+        } else {
+          syncStatus.textContent = 'Customer data active: ' + new Date(stats.lastSync).toLocaleString();
+          syncStatus.className = 'sync-status synced';
+        }
       } else {
         syncStatus.textContent = 'Offline';
         syncStatus.className = 'sync-status not-synced';
@@ -564,14 +575,19 @@
     
     try {
       const synced = await window.crossDeviceCRMSync.syncFromCloud();
+      const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
       if (synced) {
         await updateCRMStats();
         await renderCRMTables();
-        alert('Cross-device data synced successfully!');
+        if (isLocalMode(diagnostics)) {
+          alert('Local CRM refreshed. Cloud sync is currently unavailable.');
+        } else {
+          alert('Cross-device data synced successfully!');
+        }
       } else {
         await updateCRMStats();
         await renderCRMTables();
-        alert('Data refreshed and shared across devices!');
+        alert('Data refreshed locally. Cloud sync could not be reached.');
       }
     } catch (error) {
       console.error('Cross-device sync error:', error);
@@ -610,12 +626,18 @@
     
     try {
       const refreshed = await window.forceCRMRefresh();
+      const diagnostics = window.customerCRMFlow.getSyncDiagnostics ? window.customerCRMFlow.getSyncDiagnostics() : null;
+      await updateCRMStats();
+      await renderCRMTables();
+
       if (refreshed) {
-        await updateCRMStats();
-        await renderCRMTables();
-        alert('Force refresh completed! Old data should now be updated.');
+        if (isLocalMode(diagnostics)) {
+          alert('Force refresh completed in local mode. Cloud sync is unavailable right now.');
+        } else {
+          alert('Force refresh completed! Old data should now be updated.');
+        }
       } else {
-        alert('Force refresh failed. Please try again.');
+        alert('Refresh could not load data. Please place one test order and try again.');
       }
     } catch (error) {
       console.error('Force refresh error:', error);

@@ -8,6 +8,12 @@ class CustomerCRMFlow {
     this.sharedBlobId = '019d916a-c3b2-7794-9ed8-d8fa9db8f328';
     this.maxTotalEntries = 100;
     this.syncInProgress = false;
+    this.syncPromise = null;
+    this.lastSyncOutcome = 'unknown';
+    this.lastSyncError = '';
+    this.lastCloudReadOk = null;
+    this.lastCloudWriteOk = null;
+    this.lastSyncAttemptAt = null;
     this.autoSyncMs = 5000;
     this.init();
   }
@@ -184,6 +190,8 @@ class CustomerCRMFlow {
   }
 
   async loadFromCloud() {
+    this.lastSyncAttemptAt = new Date().toISOString();
+
     try {
       const response = await fetch(this.getCloudUrl(), {
         method: 'GET',
@@ -191,13 +199,19 @@ class CustomerCRMFlow {
       });
 
       if (!response.ok) {
+        this.lastCloudReadOk = false;
+        this.lastSyncError = `cloud_read_http_${response.status}`;
         console.warn('CRM: Cloud read failed with status', response.status);
         return null;
       }
 
       const data = await response.json();
+      this.lastCloudReadOk = true;
+      this.lastSyncError = '';
       return this.normalizeData(data);
     } catch (error) {
+      this.lastCloudReadOk = false;
+      this.lastSyncError = `cloud_read_failed_${error?.message || 'unknown'}`;
       console.error('CRM: Failed to load cloud CRM data:', error);
       return null;
     }
@@ -218,13 +232,19 @@ class CustomerCRMFlow {
       });
 
       if (!response.ok) {
+        this.lastCloudWriteOk = false;
+        this.lastSyncError = `cloud_write_http_${response.status}`;
         console.warn('CRM: Cloud write failed with status', response.status);
         return false;
       }
 
+      this.lastCloudWriteOk = true;
+      this.lastSyncError = '';
       localStorage.setItem('crmLastSync', Date.now().toString());
       return true;
     } catch (error) {
+      this.lastCloudWriteOk = false;
+      this.lastSyncError = `cloud_write_failed_${error?.message || 'unknown'}`;
       console.error('CRM: Failed to save cloud CRM data:', error);
       return false;
     }
@@ -314,44 +334,59 @@ class CustomerCRMFlow {
 
   async syncFromCloud(forcePush = false) {
     if (!navigator.onLine) {
-      return false;
+      this.lastSyncOutcome = 'offline_local';
+      return this.hasEntries(this.getCRMData());
     }
 
-    if (this.syncInProgress) {
-      return false;
+    if (this.syncPromise) {
+      return this.syncPromise;
     }
 
     this.syncInProgress = true;
+    this.syncPromise = (async () => {
+      try {
+        this.migrateLegacyLocalData();
+        const localData = this.getCRMData();
+        const cloudData = await this.loadFromCloud();
 
-    try {
-      const localData = this.getCRMData();
-      const cloudData = await this.loadFromCloud();
+        if (!cloudData) {
+          // Cloud can fail due CORS/network. Keep local CRM usable.
+          if (forcePush) {
+            await this.saveToCloud(localData);
+          }
+          this.lastSyncOutcome = this.lastCloudWriteOk === false ? 'local_only_cloud_write_failed' : 'local_only';
+          return this.hasEntries(localData);
+        }
 
-      if (!cloudData) {
-        // If cloud is empty/unavailable, attempt to seed cloud with local data.
-        return await this.saveToCloud(localData);
+        const mergedData = this.mergeData(localData, cloudData);
+        const localSignature = this.dataSignature(localData);
+        const cloudSignature = this.dataSignature(cloudData);
+        const mergedSignature = this.dataSignature(mergedData);
+
+        if (localSignature !== mergedSignature) {
+          this.saveCRMData(mergedData);
+        }
+
+        if (forcePush || cloudSignature !== mergedSignature) {
+          const cloudWriteOk = await this.saveToCloud(mergedData);
+          this.lastSyncOutcome = cloudWriteOk ? 'cloud_synced' : 'local_merged_cloud_write_failed';
+          return true;
+        }
+
+        this.lastSyncOutcome = 'cloud_synced';
+        return true;
+      } catch (error) {
+        this.lastSyncOutcome = 'sync_failed_local_fallback';
+        this.lastSyncError = `sync_failed_${error?.message || 'unknown'}`;
+        console.error('CRM: syncFromCloud failed:', error);
+        return this.hasEntries(this.getCRMData());
+      } finally {
+        this.syncInProgress = false;
+        this.syncPromise = null;
       }
+    })();
 
-      const mergedData = this.mergeData(localData, cloudData);
-      const localSignature = this.dataSignature(localData);
-      const cloudSignature = this.dataSignature(cloudData);
-      const mergedSignature = this.dataSignature(mergedData);
-
-      if (localSignature !== mergedSignature) {
-        this.saveCRMData(mergedData);
-      }
-
-      if (forcePush || cloudSignature !== mergedSignature) {
-        await this.saveToCloud(mergedData);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('CRM: syncFromCloud failed:', error);
-      return false;
-    } finally {
-      this.syncInProgress = false;
-    }
+    return this.syncPromise;
   }
 
   async pushLatestToCloud(retries = 3) {
@@ -483,7 +518,25 @@ class CustomerCRMFlow {
   }
 
   async forceCRMRefresh() {
-    return this.syncFromCloud(true);
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const synced = await this.syncFromCloud(true);
+      if (synced) {
+        return true;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+
+    return this.hasEntries(this.getCRMData());
+  }
+
+  getSyncDiagnostics() {
+    return {
+      outcome: this.lastSyncOutcome,
+      error: this.lastSyncError || null,
+      lastCloudReadOk: this.lastCloudReadOk,
+      lastCloudWriteOk: this.lastCloudWriteOk,
+      lastSyncAttemptAt: this.lastSyncAttemptAt
+    };
   }
 }
 
@@ -511,6 +564,10 @@ window.forceCRMRefresh = async function() {
 
 window.refreshCRMData = async function() {
   return window.customerCRMFlow.refreshCRMData();
+};
+
+window.getCRMSyncDiagnostics = function() {
+  return window.customerCRMFlow.getSyncDiagnostics();
 };
 
 window.crossDeviceCRMSync = window.customerCRMFlow;
