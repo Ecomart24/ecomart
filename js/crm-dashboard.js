@@ -197,6 +197,12 @@
       return;
     }
 
+    if (outcome === 'cloud_config_updated' || outcome === 'cloud_config_bootstrapped') {
+      refs.syncStatus.classList.add('sync-warn');
+      refs.syncStatus.textContent = 'Cloud configured (sync pending)';
+      return;
+    }
+
     if (cloudFailure) {
       refs.syncStatus.classList.add('sync-warn');
       refs.syncStatus.textContent = 'Cloud issue (local fallback)';
@@ -371,7 +377,16 @@
       closeCloudModal();
       await refreshCRM(true);
       renderDashboard();
-      alert('Cloud sync enabled. Data will now sync across devices.');
+      const diagnostics = getDiagnostics();
+      const outcome = String(diagnostics.outcome || '');
+      const failed = outcome.includes('failed') || !!diagnostics.error || diagnostics.lastCloudReadOk === false || diagnostics.lastCloudWriteOk === false;
+
+      if (failed) {
+        const message = diagnostics.error || 'Cloud request failed. Check table + RLS policy.';
+        alert('Cloud setup saved, but sync failed: ' + message);
+      } else {
+        alert('Cloud sync enabled. Data will now sync across devices.');
+      }
     } catch (error) {
       console.error('Cloud setup failed:', error);
       alert('Cloud setup failed. Please recheck your details and try again.');

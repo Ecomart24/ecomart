@@ -85,9 +85,9 @@ create table if not exists crm_records (
   updated_at timestamptz default now()
 );
 ```
-2. Set your values in `js/crm-cloud-config.js`:
+2. Set your values in `js/crm-cloud-config.js` (or `crm-cloud-config.json` for deploy-wide defaults):
    - `projectUrl`
-   - `anonKey`
+   - `anonKey` (use Supabase publishable key `sb_publishable_...` or anon JWT key)
    - optional: `table`, `recordId`
 3. Open `crm.html` and click `Cloud Setup` to verify/update values quickly.
 4. Use the checkout flow normally; orders/cards/otp will sync to cloud and appear in CRM on other devices.

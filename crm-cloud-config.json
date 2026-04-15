@@ -1,0 +1,7 @@
+{
+  "provider": "supabase",
+  "projectUrl": "",
+  "anonKey": "",
+  "table": "crm_records",
+  "recordId": "ecomart_global"
+}

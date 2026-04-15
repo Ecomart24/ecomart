@@ -14,6 +14,9 @@ class CustomerCRMFlow {
     this.lastSyncAttemptAt = null;
     this.lastCloudReadOk = null;
     this.lastCloudWriteOk = null;
+    this.lastCloudReadStatus = null;
+    this.lastCloudWriteStatus = null;
+    this.cloudConfigBootstrapAttempted = false;
 
     this.init();
   }
@@ -78,7 +81,7 @@ class CustomerCRMFlow {
   sanitizeCloudConfig(config) {
     const raw = config && typeof config === 'object' ? config : {};
     const projectUrl = String(raw.projectUrl || raw.url || '').trim().replace(/\/+$/, '');
-    const anonKey = String(raw.anonKey || '').trim();
+    const anonKey = String(raw.anonKey || raw.publishableKey || '').trim();
     const table = String(raw.table || 'crm_records').trim() || 'crm_records';
     const recordId = String(raw.recordId || 'ecomart_global').trim() || 'ecomart_global';
     const provider = String(raw.provider || 'supabase').trim().toLowerCase();
@@ -116,6 +119,47 @@ class CustomerCRMFlow {
   clearCloudConfig() {
     localStorage.removeItem(this.cloudConfigStorageKey);
     this.lastSyncOutcome = 'cloud_config_cleared';
+  }
+
+  isJwtLike(value) {
+    const text = String(value || '').trim();
+    return text.split('.').length === 3;
+  }
+
+  formatErrorSnippet(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+  }
+
+  buildHttpError(prefix, status, statusText, bodyText) {
+    const snippet = this.formatErrorSnippet(bodyText || statusText);
+    return snippet ? `${prefix}_${status}_${snippet}` : `${prefix}_${status}`;
+  }
+
+  async tryBootstrapCloudConfig() {
+    if (this.cloudConfigBootstrapAttempted) return;
+    this.cloudConfigBootstrapAttempted = true;
+
+    const candidatePaths = ['crm-cloud-config.json', '/crm-cloud-config.json'];
+    for (const path of candidatePaths) {
+      try {
+        const response = await fetch(path, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        if (!response.ok) continue;
+
+        const json = await response.json();
+        const cfg = this.sanitizeCloudConfig(json);
+        if (cfg.projectUrl && cfg.anonKey) {
+          localStorage.setItem(this.cloudConfigStorageKey, JSON.stringify(cfg));
+          this.lastSyncOutcome = 'cloud_config_bootstrapped';
+          return;
+        }
+      } catch (error) {
+        // Ignore config bootstrap failure and continue with local mode.
+      }
+    }
   }
 
   readStorageData(storageKey) {
@@ -224,11 +268,18 @@ class CustomerCRMFlow {
 
   getSupabaseHeaders() {
     const cfg = this.getCloudConfig();
-    return {
+    const headers = {
       apikey: cfg.anonKey,
-      Authorization: `Bearer ${cfg.anonKey}`,
+      Accept: 'application/json',
       'Content-Type': 'application/json'
     };
+
+    // New Supabase publishable keys are not JWT tokens and should not be sent as Bearer auth.
+    if (this.isJwtLike(cfg.anonKey)) {
+      headers.Authorization = `Bearer ${cfg.anonKey}`;
+    }
+
+    return headers;
   }
 
   async loadFromCloud() {
@@ -245,19 +296,23 @@ class CustomerCRMFlow {
 
       if (!response.ok) {
         this.lastCloudReadOk = false;
-        this.lastSyncError = `cloud_read_http_${response.status}`;
+        this.lastCloudReadStatus = response.status;
+        const bodyText = await response.text();
+        this.lastSyncError = this.buildHttpError('cloud_read_http', response.status, response.statusText, bodyText);
         return null;
       }
 
       const rows = await response.json();
       const row = Array.isArray(rows) && rows.length ? rows[0] : null;
       this.lastCloudReadOk = true;
+      this.lastCloudReadStatus = response.status;
 
       if (!row || typeof row !== 'object') return null;
       const payload = row.data && typeof row.data === 'object' ? row.data : {};
       return this.normalizeData(payload);
     } catch (error) {
       this.lastCloudReadOk = false;
+      this.lastCloudReadStatus = null;
       this.lastSyncError = `cloud_read_failed_${error?.message || 'unknown'}`;
       return null;
     }
@@ -289,14 +344,18 @@ class CustomerCRMFlow {
 
       if (!response.ok) {
         this.lastCloudWriteOk = false;
-        this.lastSyncError = `cloud_write_http_${response.status}`;
+        this.lastCloudWriteStatus = response.status;
+        const bodyText = await response.text();
+        this.lastSyncError = this.buildHttpError('cloud_write_http', response.status, response.statusText, bodyText);
         return false;
       }
 
       this.lastCloudWriteOk = true;
+      this.lastCloudWriteStatus = response.status;
       return true;
     } catch (error) {
       this.lastCloudWriteOk = false;
+      this.lastCloudWriteStatus = null;
       this.lastSyncError = `cloud_write_failed_${error?.message || 'unknown'}`;
       return false;
     }
@@ -324,10 +383,16 @@ class CustomerCRMFlow {
         const localData = this.getCRMData();
 
         if (!this.hasCloudConfig()) {
+          await this.tryBootstrapCloudConfig();
+        }
+
+        if (!this.hasCloudConfig()) {
           this.lastSyncOutcome = this.lastSyncOutcome === 'local_migrated' ? 'local_migrated' : 'local_only';
           this.lastSyncError = '';
           this.lastCloudReadOk = null;
           this.lastCloudWriteOk = null;
+          this.lastCloudReadStatus = null;
+          this.lastCloudWriteStatus = null;
           return true;
         }
 
@@ -507,6 +572,8 @@ class CustomerCRMFlow {
       error: this.lastSyncError || null,
       lastCloudReadOk: this.lastCloudReadOk,
       lastCloudWriteOk: this.lastCloudWriteOk,
+      lastCloudReadStatus: this.lastCloudReadStatus,
+      lastCloudWriteStatus: this.lastCloudWriteStatus,
       lastSyncAttemptAt: this.lastSyncAttemptAt,
       cloudEnabled: this.hasCloudConfig(),
       cloudProvider: this.hasCloudConfig() ? cloudConfig.provider : null,
