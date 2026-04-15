@@ -3,7 +3,7 @@
 window.CRM_CLOUD_CONFIG = window.CRM_CLOUD_CONFIG || {
   provider: 'supabase',
   projectUrl: 'https://bauuorewcadabazboogi.supabase.co',
-  anonKey: 'sb_publishable_npzOme2X4Gdd9fc64iJrbw_UahIY2MN',
+  anonKey: 'sb_publishable_biZ_9wmcveuTMLptm-OvmQ_7j-wP9sE',
   table: 'crm_records',
   recordId: 'ecomart_global'
 };
