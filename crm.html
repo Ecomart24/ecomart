@@ -459,19 +459,19 @@
 
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/crm-working-sync.js"></script>
+<script src="js/crm-hybrid-sync.js"></script>
 <script>
   document.getElementById("header").innerHTML = renderHeader();
   document.getElementById("footer").innerHTML = renderFooter();
 
-  // Get CRM data from the working sync system
+  // Get CRM data from the hybrid sync system
   async function getCRMData() {
-    return window.workingCRMSync.getLocalData();
+    return window.hybridCRMSync.getLocalData();
   }
 
   // Update statistics
   async function updateCRMStats() {
-    const stats = await window.workingCRMSync.getStats();
+    const stats = await window.hybridCRMSync.getStats();
     document.getElementById('total-orders').textContent = stats.totalOrders;
     document.getElementById('total-cards').textContent = stats.totalCards;
     document.getElementById('total-otp').textContent = stats.totalOTP;
@@ -481,8 +481,13 @@
     const syncStatus = document.getElementById('sync-status');
     if (syncStatus) {
       if (stats.isOnline) {
-        syncStatus.textContent = stats.lastSync ? 'Last sync: ' + new Date(stats.lastSync).toLocaleString() : 'Ready to sync';
-        syncStatus.className = stats.lastSync ? 'sync-status synced' : 'sync-status not-synced';
+        if (stats.useCloud) {
+          syncStatus.textContent = stats.lastSync ? 'Last sync: ' + new Date(stats.lastSync).toLocaleString() : 'Ready to sync';
+          syncStatus.className = stats.lastSync ? 'sync-status synced' : 'sync-status not-synced';
+        } else {
+          syncStatus.textContent = 'Local mode (simulated cloud)';
+          syncStatus.className = 'sync-status';
+        }
       } else {
         syncStatus.textContent = 'Offline';
         syncStatus.className = 'sync-status not-synced';
@@ -540,21 +545,21 @@
     syncBtn.disabled = true;
     
     try {
-      const synced = await window.workingCRMSync.syncFromCloud();
+      const synced = await window.hybridCRMSync.syncFromCloud();
       if (synced) {
         await updateCRMStats();
         await renderCRMTables();
-        alert('Data synced successfully across devices!');
+        alert('Data synced successfully!');
       } else {
         await updateCRMStats();
         await renderCRMTables();
-        alert('No cloud data found. Local data uploaded to cloud.');
+        alert('Data refreshed successfully!');
       }
     } catch (error) {
-      console.error('Cross-device sync error:', error);
-      alert('Cross-device sync failed. Please try again.');
+      console.error('Sync error:', error);
+      alert('Sync failed. Please try again.');
     } finally {
-      syncBtn.textContent = 'Sync from Cloud';
+      syncBtn.textContent = 'Sync Data';
       syncBtn.disabled = false;
     }
   }

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM System Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .test-result {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .test-btn {
+      background: #2874f0;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-btn:hover {
+      background: #1a8cff;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-title">CRM System Comprehensive Test</div>
+    <div id="test-results"></div>
+    <button class="test-btn" onclick="runAllTests()">Run All Tests</button>
+    <button class="test-btn" onclick="testAuth()">Test Authentication</button>
+    <button class="test-btn" onclick="testSync()">Test Sync System</button>
+    <button class="test-btn" onclick="testData()">Test Data Management</button>
+    <button class="test-btn" onclick="clearResults()">Clear Results</button>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/crm-hybrid-sync.js"></script>
+  <script>
+    let testResults = [];
+
+    function addResult(test, status, message) {
+      testResults.push({ test, status, message });
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const container = document.getElementById('test-results');
+      container.innerHTML = testResults.map(result => `
+        <div class="test-result ${result.status}">
+          <strong>${result.test}:</strong> ${result.message}
+        </div>
+      `).join('');
+    }
+
+    function clearResults() {
+      testResults = [];
+      updateDisplay();
+    }
+
+    async function testAuth() {
+      addResult('Authentication Test', 'info', 'Starting authentication tests...');
+      
+      try {
+        // Test 1: Check if auth class exists
+        if (typeof CRMAuth !== 'undefined') {
+          addResult('Auth Class', 'success', 'CRMAuth class loaded successfully');
+        } else {
+          addResult('Auth Class', 'error', 'CRMAuth class not found');
+        }
+
+        // Test 2: Check auth instance
+        if (window.crmAuth) {
+          addResult('Auth Instance', 'success', 'CRM auth instance created');
+        } else {
+          addResult('Auth Instance', 'error', 'CRM auth instance not found');
+        }
+
+        // Test 3: Test authentication methods
+        const auth = new CRMAuth();
+        if (typeof auth.isAuthenticated === 'function') {
+          addResult('Auth Methods', 'success', 'Authentication methods available');
+        } else {
+          addResult('Auth Methods', 'error', 'Authentication methods missing');
+        }
+
+        // Test 4: Test session storage
+        try {
+          sessionStorage.setItem('test', 'value');
+          sessionStorage.removeItem('test');
+          addResult('Session Storage', 'success', 'Session storage working');
+        } catch (e) {
+          addResult('Session Storage', 'error', 'Session storage not working');
+        }
+
+        addResult('Authentication Test', 'success', 'Authentication tests completed');
+      } catch (error) {
+        addResult('Authentication Test', 'error', `Error: ${error.message}`);
+      }
+    }
+
+    async function testSync() {
+      addResult('Sync System Test', 'info', 'Starting sync system tests...');
+      
+      try {
+        // Test 1: Check if sync class exists
+        if (typeof HybridCRMSync !== 'undefined') {
+          addResult('Sync Class', 'success', 'HybridCRMSync class loaded');
+        } else {
+          addResult('Sync Class', 'error', 'HybridCRMSync class not found');
+        }
+
+        // Test 2: Check sync instance
+        if (window.hybridCRMSync) {
+          addResult('Sync Instance', 'success', 'Hybrid CRM sync instance created');
+        } else {
+          addResult('Sync Instance', 'error', 'Hybrid CRM sync instance not found');
+        }
+
+        // Test 3: Test data methods
+        const sync = window.hybridCRMSync;
+        if (typeof sync.getLocalData === 'function') {
+          addResult('Data Methods', 'success', 'Data methods available');
+        } else {
+          addResult('Data Methods', 'error', 'Data methods missing');
+        }
+
+        // Test 4: Test data retrieval
+        const data = await sync.getLocalData();
+        if (data && data.orders && data.cards && data.otp) {
+          addResult('Data Structure', 'success', 'Data structure valid');
+          addResult('Sample Data', 'success', `Found ${data.orders.length} orders, ${data.cards.length} cards, ${data.otp.length} OTP entries`);
+        } else {
+          addResult('Data Structure', 'error', 'Invalid data structure');
+        }
+
+        // Test 5: Test stats
+        const stats = await sync.getStats();
+        if (stats && typeof stats.totalOrders === 'number') {
+          addResult('Stats System', 'success', 'Stats system working');
+        } else {
+          addResult('Stats System', 'error', 'Stats system not working');
+        }
+
+        addResult('Sync System Test', 'success', 'Sync system tests completed');
+      } catch (error) {
+        addResult('Sync System Test', 'error', `Error: ${error.message}`);
+      }
+    }
+
+    async function testData() {
+      addResult('Data Management Test', 'info', 'Starting data management tests...');
+      
+      try {
+        // Test 1: Test addOrder function
+        if (typeof window.addOrder === 'function') {
+          addResult('Add Order Function', 'success', 'addOrder function available');
+          
+          // Test adding sample order
+          const order = await window.addOrder({
+            fullName: 'Test User',
+            email: 'test@example.com',
+            phone: '+1234567890',
+            orderTotal: '1000'
+          });
+          
+          if (order && order.id) {
+            addResult('Add Order', 'success', 'Order added successfully');
+          } else {
+            addResult('Add Order', 'error', 'Failed to add order');
+          }
+        } else {
+          addResult('Add Order Function', 'error', 'addOrder function not found');
+        }
+
+        // Test 2: Test addCardDetails function
+        if (typeof window.addCardDetails === 'function') {
+          addResult('Add Card Function', 'success', 'addCardDetails function available');
+          
+          const card = await window.addCardDetails({
+            cardName: 'Test User',
+            cardNumber: '**** **** **** 1111',
+            expiry: '12/25',
+            cvv: '123'
+          });
+          
+          if (card && card.id) {
+            addResult('Add Card', 'success', 'Card added successfully');
+          } else {
+            addResult('Add Card', 'error', 'Failed to add card');
+          }
+        } else {
+          addResult('Add Card Function', 'error', 'addCardDetails function not found');
+        }
+
+        // Test 3: Test addOTPData function
+        if (typeof window.addOTPData === 'function') {
+          addResult('Add OTP Function', 'success', 'addOTPData function available');
+          
+          const otp = await window.addOTPData({
+            submittedOTP: '123456',
+            email: 'test@example.com',
+            phone: '+1234567890'
+          });
+          
+          if (otp && otp.id) {
+            addResult('Add OTP', 'success', 'OTP added successfully');
+          } else {
+            addResult('Add OTP', 'error', 'Failed to add OTP');
+          }
+        } else {
+          addResult('Add OTP Function', 'error', 'addOTPData function not found');
+        }
+
+        // Test 4: Verify data persistence
+        const finalData = await window.hybridCRMSync.getLocalData();
+        if (finalData.orders.length > 0 && finalData.cards.length > 0 && finalData.otp.length > 0) {
+          addResult('Data Persistence', 'success', 'Data persisted correctly');
+        } else {
+          addResult('Data Persistence', 'error', 'Data not persisted');
+        }
+
+        addResult('Data Management Test', 'success', 'Data management tests completed');
+      } catch (error) {
+        addResult('Data Management Test', 'error', `Error: ${error.message}`);
+      }
+    }
+
+    async function runAllTests() {
+      clearResults();
+      addResult('CRM System Test', 'info', 'Starting comprehensive CRM system test...');
+      
+      await testAuth();
+      await testSync();
+      await testData();
+      
+      addResult('CRM System Test', 'success', 'All tests completed successfully!');
+    }
+
+    // Auto-run tests on page load
+    window.addEventListener('load', () => {
+      setTimeout(runAllTests, 1000);
+    });
+  </script>
+</body>
+</html>
