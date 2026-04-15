@@ -72,3 +72,22 @@ Currently runs in demo mode where:
 - Firefox 60+
 - Safari 12+
 - Edge 79+
+
+## CRM Cloud Sync (Access From Anywhere)
+
+To make CRM data available across devices, enable Supabase sync.
+
+1. Create a Supabase table:
+```sql
+create table if not exists crm_records (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz default now()
+);
+```
+2. Set your values in `js/crm-cloud-config.js`:
+   - `projectUrl`
+   - `anonKey`
+   - optional: `table`, `recordId`
+3. Open `crm.html` and click `Cloud Setup` to verify/update values quickly.
+4. Use the checkout flow normally; orders/cards/otp will sync to cloud and appear in CRM on other devices.

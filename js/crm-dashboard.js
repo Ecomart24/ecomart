@@ -3,7 +3,7 @@
 
   const PRIMARY_STORAGE_KEY = 'crm_customer_data';
   const LEGACY_STORAGE_KEYS = ['crmData', 'crm_data_cross_device', 'crm_data_hybrid', 'crm_data_v2'];
-  const STORAGE_KEYS_TO_WATCH = [...LEGACY_STORAGE_KEYS, PRIMARY_STORAGE_KEY, 'crmLastSync'];
+  const STORAGE_KEYS_TO_WATCH = [...LEGACY_STORAGE_KEYS, PRIMARY_STORAGE_KEY, 'crmLastSync', 'crmCloudConfig'];
 
   let activeTab = 'orders';
   let searchTerm = '';
@@ -11,6 +11,7 @@
   const refs = {
     refreshBtn: document.getElementById('refresh-btn'),
     forceRefreshBtn: document.getElementById('force-refresh-btn'),
+    cloudSetupBtn: document.getElementById('cloud-setup-btn'),
     exportBtn: document.getElementById('export-btn'),
     searchInput: document.getElementById('search-input'),
     syncStatus: document.getElementById('sync-status'),
@@ -20,7 +21,16 @@
     statLast: document.getElementById('stat-last'),
     ordersBody: document.getElementById('orders-body'),
     cardsBody: document.getElementById('cards-body'),
-    otpBody: document.getElementById('otp-body')
+    otpBody: document.getElementById('otp-body'),
+    cloudModal: document.getElementById('cloud-modal'),
+    cloudCloseBtn: document.getElementById('cloud-close-btn'),
+    cloudCancelBtn: document.getElementById('cloud-cancel-btn'),
+    cloudSaveBtn: document.getElementById('cloud-save-btn'),
+    cloudClearBtn: document.getElementById('cloud-clear-btn'),
+    cloudProjectUrl: document.getElementById('cloud-project-url'),
+    cloudAnonKey: document.getElementById('cloud-anon-key'),
+    cloudTable: document.getElementById('cloud-table'),
+    cloudRecordId: document.getElementById('cloud-record-id')
   };
 
   function setChrome() {
@@ -169,24 +179,35 @@
   function updateSyncStatus(stats, diagnostics) {
     const online = !!stats.isOnline;
     const outcome = String(diagnostics.outcome || '');
-    const localMode = outcome.includes('local') || outcome === 'offline_local';
+    const cloudEnabled = !!diagnostics.cloudEnabled;
+    const cloudFailure = outcome.includes('failed') || !!diagnostics.error || diagnostics.lastCloudReadOk === false || diagnostics.lastCloudWriteOk === false;
 
     refs.syncStatus.classList.remove('sync-ok', 'sync-warn');
+    refs.syncStatus.removeAttribute('title');
 
     if (!online) {
       refs.syncStatus.classList.add('sync-warn');
-      refs.syncStatus.textContent = 'Offline mode';
+      refs.syncStatus.textContent = 'Offline mode (local cache)';
       return;
     }
 
-    if (localMode) {
+    if (!cloudEnabled) {
       refs.syncStatus.classList.add('sync-warn');
       refs.syncStatus.textContent = 'Local mode active';
       return;
     }
 
+    if (cloudFailure) {
+      refs.syncStatus.classList.add('sync-warn');
+      refs.syncStatus.textContent = 'Cloud issue (local fallback)';
+      if (diagnostics.error) {
+        refs.syncStatus.title = diagnostics.error;
+      }
+      return;
+    }
+
     refs.syncStatus.classList.add('sync-ok');
-    refs.syncStatus.textContent = 'CRM active';
+    refs.syncStatus.textContent = 'Cloud sync active';
   }
 
   function formatOrderDetails(order) {
@@ -288,6 +309,93 @@
     });
   }
 
+  function getCloudConfig() {
+    if (typeof window.getCRMCloudConfig === 'function') {
+      return window.getCRMCloudConfig() || {};
+    }
+    return {};
+  }
+
+  function fillCloudForm() {
+    const cfg = getCloudConfig();
+    if (refs.cloudProjectUrl) refs.cloudProjectUrl.value = cfg.projectUrl || '';
+    if (refs.cloudAnonKey) refs.cloudAnonKey.value = cfg.anonKey || '';
+    if (refs.cloudTable) refs.cloudTable.value = cfg.table || 'crm_records';
+    if (refs.cloudRecordId) refs.cloudRecordId.value = cfg.recordId || 'ecomart_global';
+  }
+
+  function openCloudModal() {
+    if (!refs.cloudModal) return;
+    fillCloudForm();
+    refs.cloudModal.classList.add('open');
+    if (refs.cloudProjectUrl) refs.cloudProjectUrl.focus();
+  }
+
+  function closeCloudModal() {
+    if (!refs.cloudModal) return;
+    refs.cloudModal.classList.remove('open');
+  }
+
+  function parseCloudForm() {
+    const projectUrl = String(refs.cloudProjectUrl?.value || '').trim();
+    const anonKey = String(refs.cloudAnonKey?.value || '').trim();
+    const table = String(refs.cloudTable?.value || '').trim() || 'crm_records';
+    const recordId = String(refs.cloudRecordId?.value || '').trim() || 'ecomart_global';
+    return { provider: 'supabase', projectUrl, anonKey, table, recordId };
+  }
+
+  async function saveCloudConfig() {
+    const config = parseCloudForm();
+    if (!config.projectUrl || !/^https?:\/\//i.test(config.projectUrl)) {
+      alert('Enter a valid Supabase project URL.');
+      refs.cloudProjectUrl?.focus();
+      return;
+    }
+    if (!config.anonKey) {
+      alert('Enter your Supabase anon key.');
+      refs.cloudAnonKey?.focus();
+      return;
+    }
+
+    if (typeof window.setCRMCloudConfig !== 'function') {
+      alert('Cloud setup is unavailable in this build.');
+      return;
+    }
+
+    refs.cloudSaveBtn.disabled = true;
+    const oldText = refs.cloudSaveBtn.textContent;
+    refs.cloudSaveBtn.textContent = 'Saving...';
+
+    try {
+      window.setCRMCloudConfig(config);
+      closeCloudModal();
+      await refreshCRM(true);
+      renderDashboard();
+      alert('Cloud sync enabled. Data will now sync across devices.');
+    } catch (error) {
+      console.error('Cloud setup failed:', error);
+      alert('Cloud setup failed. Please recheck your details and try again.');
+    } finally {
+      refs.cloudSaveBtn.textContent = oldText;
+      refs.cloudSaveBtn.disabled = false;
+    }
+  }
+
+  async function clearCloudConfig() {
+    if (typeof window.clearCRMCloudConfig !== 'function') {
+      alert('Cloud setup is unavailable in this build.');
+      return;
+    }
+
+    const proceed = window.confirm('Switch to local-only mode on this device?');
+    if (!proceed) return;
+
+    window.clearCRMCloudConfig();
+    closeCloudModal();
+    await refreshCRM(false);
+    renderDashboard();
+  }
+
   async function refreshCRM(force) {
     const targetBtn = force ? refs.forceRefreshBtn : refs.refreshBtn;
     targetBtn.disabled = true;
@@ -302,6 +410,9 @@
       }
     } catch (error) {
       console.error('CRM refresh error:', error);
+      refs.syncStatus.classList.remove('sync-ok');
+      refs.syncStatus.classList.add('sync-warn');
+      refs.syncStatus.textContent = 'Refresh failed - try again';
     } finally {
       targetBtn.textContent = oldText;
       targetBtn.disabled = false;
@@ -345,6 +456,11 @@
     refs.refreshBtn.addEventListener('click', () => refreshCRM(false));
     refs.forceRefreshBtn.addEventListener('click', () => refreshCRM(true));
     refs.exportBtn.addEventListener('click', exportData);
+    refs.cloudSetupBtn.addEventListener('click', openCloudModal);
+    refs.cloudCloseBtn.addEventListener('click', closeCloudModal);
+    refs.cloudCancelBtn.addEventListener('click', closeCloudModal);
+    refs.cloudSaveBtn.addEventListener('click', saveCloudConfig);
+    refs.cloudClearBtn.addEventListener('click', clearCloudConfig);
 
     refs.searchInput.addEventListener('input', (event) => {
       searchTerm = String(event.target.value || '').trim().toLowerCase();
@@ -366,6 +482,18 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         renderDashboard();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeCloudModal();
+      }
+    });
+
+    refs.cloudModal.addEventListener('click', (event) => {
+      if (event.target === refs.cloudModal) {
+        closeCloudModal();
       }
     });
 
