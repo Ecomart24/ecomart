@@ -397,6 +397,7 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Order Total</th>
+            <th>Store Details</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -470,11 +471,25 @@
   }
 
   const CRM_STORAGE_KEY = 'crm_customer_data';
-  const FAST_REFRESH_MS = 1;
-  const CLOUD_SYNC_MS = 1000;
+  const LEGACY_CRM_STORAGE_KEYS = ['crmData', 'crm_data_cross_device', 'crm_data_hybrid', 'crm_data_v2'];
+  const FAST_REFRESH_MS = 500;
+  const CLOUD_SYNC_MS = 5000;
   let lastCRMDataSignature = '';
   let fastRefreshTimer = null;
   let cloudSyncTimer = null;
+
+  function formatOrderDetails(order) {
+    const details = [];
+    if (order.items) details.push(order.items);
+
+    const location = [order.city, order.state, order.pincode].filter(Boolean).join(', ');
+    if (location) details.push(location);
+
+    if (order.addressType) details.push('Type: ' + order.addressType);
+    if (order.address) details.push(order.address);
+
+    return details.length ? details.join(' | ') : 'N/A';
+  }
 
   // Update statistics
   async function updateCRMStats() {
@@ -510,6 +525,7 @@
         <td>${order.email}</td>
         <td>${order.phone}</td>
         <td>Rs${order.orderTotal}</td>
+        <td>${formatOrderDetails(order)}</td>
         <td><span class="status-badge status-success">${order.status}</span></td>
       </tr>
     `).join('');
@@ -649,6 +665,10 @@
   }
 
   async function refreshDashboardIfChanged(forceUpdate = false) {
+    if (window.customerCRMFlow && typeof window.customerCRMFlow.migrateLegacyLocalData === 'function') {
+      window.customerCRMFlow.migrateLegacyLocalData();
+    }
+
     const currentSignature = localStorage.getItem(CRM_STORAGE_KEY) || '';
     if (!forceUpdate && currentSignature === lastCRMDataSignature) {
       return;
@@ -688,7 +708,7 @@
 
   // Instant refresh when orders are updated in another tab/window
   window.addEventListener('storage', async (event) => {
-    if (event.key === CRM_STORAGE_KEY) {
+    if (event.key === CRM_STORAGE_KEY || LEGACY_CRM_STORAGE_KEYS.includes(event.key)) {
       await refreshDashboardIfChanged(true);
     }
   });

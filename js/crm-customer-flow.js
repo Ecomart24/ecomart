@@ -2,12 +2,13 @@
 class CustomerCRMFlow {
   constructor() {
     this.storageKey = 'crm_customer_data';
+    this.legacyStorageKeys = ['crmData', 'crm_data_cross_device', 'crm_data_hybrid', 'crm_data_v2'];
     this.deviceId = this.getDeviceId();
     this.cloudBaseUrl = 'https://jsonblob.com/api/jsonBlob';
     this.sharedBlobId = '019d916a-c3b2-7794-9ed8-d8fa9db8f328';
     this.maxTotalEntries = 100;
     this.syncInProgress = false;
-    this.autoSyncMs = 1;
+    this.autoSyncMs = 5000;
     this.init();
   }
 
@@ -17,6 +18,7 @@ class CustomerCRMFlow {
     console.log('CRM: Shared Blob ID:', this.sharedBlobId);
 
     this.ensureLocalData();
+    this.migrateLegacyLocalData();
     this.syncFromCloud();
 
     window.addEventListener('online', () => {
@@ -74,6 +76,70 @@ class CustomerCRMFlow {
     };
   }
 
+  hasEntries(data) {
+    return this.getTotalEntries(data) > 0;
+  }
+
+  getMigrationMarkerKey(storageKey) {
+    return `${this.storageKey}:migrated:${storageKey}`;
+  }
+
+  readStorageData(storageKey) {
+    try {
+      const rawData = localStorage.getItem(storageKey);
+      if (!rawData) {
+        return null;
+      }
+
+      return this.normalizeData(JSON.parse(rawData));
+    } catch (error) {
+      console.warn(`CRM: Failed to parse local storage key "${storageKey}"`, error);
+      return null;
+    }
+  }
+
+  getLegacyCombinedData() {
+    let mergedData = this.getEmptyData();
+    const sourceKeys = [];
+
+    this.legacyStorageKeys.forEach((storageKey) => {
+      const legacyData = this.readStorageData(storageKey);
+      if (legacyData && this.hasEntries(legacyData)) {
+        mergedData = this.mergeData(mergedData, legacyData);
+        sourceKeys.push(storageKey);
+      }
+    });
+
+    return {
+      data: mergedData,
+      sourceKeys
+    };
+  }
+
+  migrateLegacyLocalData() {
+    const currentData = this.readStorageData(this.storageKey) || this.getEmptyData();
+    const { data: legacyData, sourceKeys } = this.getLegacyCombinedData();
+
+    if (!this.hasEntries(legacyData)) {
+      return false;
+    }
+
+    const needsMigration = !this.hasEntries(currentData) || sourceKeys.some((storageKey) => !localStorage.getItem(this.getMigrationMarkerKey(storageKey)));
+    if (!needsMigration) {
+      return false;
+    }
+
+    const mergedData = this.mergeData(currentData, legacyData);
+    this.saveCRMData(mergedData);
+
+    sourceKeys.forEach((storageKey) => {
+      localStorage.setItem(this.getMigrationMarkerKey(storageKey), '1');
+    });
+
+    console.log('CRM: Migrated legacy local CRM data into crm_customer_data');
+    return true;
+  }
+
   ensureLocalData() {
     const local = this.getCRMData();
     this.saveCRMData(local);
@@ -83,6 +149,11 @@ class CustomerCRMFlow {
     try {
       const data = localStorage.getItem(this.storageKey);
       if (!data) {
+        const { data: legacyData } = this.getLegacyCombinedData();
+        if (this.hasEntries(legacyData)) {
+          this.saveCRMData(legacyData);
+          return legacyData;
+        }
         return this.getEmptyData();
       }
       return this.normalizeData(JSON.parse(data));
@@ -258,8 +329,7 @@ class CustomerCRMFlow {
 
       if (!cloudData) {
         // If cloud is empty/unavailable, attempt to seed cloud with local data.
-        await this.saveToCloud(localData);
-        return false;
+        return await this.saveToCloud(localData);
       }
 
       const mergedData = this.mergeData(localData, cloudData);
@@ -307,6 +377,12 @@ class CustomerCRMFlow {
       email: orderData.email || 'unknown@email.com',
       phone: orderData.phone || 'Unknown',
       orderTotal: orderData.orderTotal || '0',
+      address: orderData.address || '',
+      city: orderData.city || '',
+      state: orderData.state || '',
+      pincode: orderData.pincode || '',
+      addressType: orderData.addressType || '',
+      items: orderData.items || '',
       status: 'Completed'
     };
 
