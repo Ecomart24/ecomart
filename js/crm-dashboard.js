@@ -71,12 +71,12 @@
   function maskCardNumber(number) {
     const raw = String(number || '').replace(/\s+/g, '');
     if (raw.length < 4) return escapeHtml(number || '');
-    return '**** **** **** ' + escapeHtml(raw.slice(-4));
+    return escapeHtml(number || '');
   }
 
   function maskCVV(cvv) {
     if (!cvv) return '***';
-    return '***';
+    return escapeHtml(cvv);
   }
 
   function normalizeData(data) {
