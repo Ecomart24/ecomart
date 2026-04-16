@@ -181,6 +181,8 @@
     const outcome = String(diagnostics.outcome || '');
     const cloudEnabled = !!diagnostics.cloudEnabled;
     const cloudFailure = outcome.includes('failed') || !!diagnostics.error || diagnostics.lastCloudReadOk === false || diagnostics.lastCloudWriteOk === false;
+    const errorText = String(diagnostics.error || '');
+    const tableMissing = /PGRST205|could not find the table/i.test(errorText);
 
     refs.syncStatus.classList.remove('sync-ok', 'sync-warn');
     refs.syncStatus.removeAttribute('title');
@@ -205,7 +207,9 @@
 
     if (cloudFailure) {
       refs.syncStatus.classList.add('sync-warn');
-      refs.syncStatus.textContent = 'Cloud issue (local fallback)';
+      refs.syncStatus.textContent = tableMissing
+        ? 'Cloud table missing (run setup SQL)'
+        : 'Cloud issue (local fallback)';
       if (diagnostics.error) {
         refs.syncStatus.title = diagnostics.error;
       }
@@ -380,10 +384,44 @@
       const diagnostics = getDiagnostics();
       const outcome = String(diagnostics.outcome || '');
       const failed = outcome.includes('failed') || !!diagnostics.error || diagnostics.lastCloudReadOk === false || diagnostics.lastCloudWriteOk === false;
+      const errorText = String(diagnostics.error || '');
+      const tableMissing = /PGRST205|could not find the table/i.test(errorText);
 
       if (failed) {
-        const message = diagnostics.error || 'Cloud request failed. Check table + RLS policy.';
-        alert('Cloud setup saved, but sync failed: ' + message);
+        if (tableMissing) {
+          const tableName = String(config.table || 'crm_records');
+          const setupSql = [
+            `create table if not exists public.${tableName} (`,
+            '  id text primary key,',
+            "  data jsonb not null default '{}'::jsonb,",
+            '  updated_at timestamptz not null default now()',
+            ');',
+            '',
+            `alter table public.${tableName} enable row level security;`,
+            '',
+            'grant usage on schema public to anon, authenticated;',
+            `grant select, insert, update on public.${tableName} to anon, authenticated;`,
+            '',
+            `drop policy if exists ${tableName}_rw_anon on public.${tableName};`,
+            `create policy ${tableName}_rw_anon`,
+            `on public.${tableName}`,
+            'for all',
+            'to anon',
+            'using (true)',
+            'with check (true);',
+            '',
+            "notify pgrst, 'reload schema';"
+          ].join('\n');
+
+          alert(
+            'Cloud setup saved, but Supabase table is missing.\n\n' +
+            'Run this SQL in Supabase SQL Editor, then click Force Refresh:\n\n' +
+            setupSql
+          );
+        } else {
+          const message = diagnostics.error || 'Cloud request failed. Check table + RLS policy.';
+          alert('Cloud setup saved, but sync failed: ' + message);
+        }
       } else {
         alert('Cloud sync enabled. Data will now sync across devices.');
       }

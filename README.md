@@ -91,3 +91,5 @@ create table if not exists crm_records (
    - optional: `table`, `recordId`
 3. Open `crm.html` and click `Cloud Setup` to verify/update values quickly.
 4. Use the checkout flow normally; orders/cards/otp will sync to cloud and appear in CRM on other devices.
+
+If cloud setup reports table missing, run `supabase-crm-setup.sql` in Supabase SQL Editor.
